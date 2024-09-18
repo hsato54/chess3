@@ -11,8 +11,6 @@ public class ChessMove {
     private ChessPosition startPos;
     private ChessPosition endPos;
     private ChessPiece.PieceType promo;
-//    private ChessGame.TeamColor team;
-//    private ChessPiece.PieceType type;
 
 
     public ChessMove(ChessPosition startPos, ChessPosition endPos,
@@ -20,8 +18,6 @@ public class ChessMove {
         this.startPos = startPos;
         this.endPos = endPos;
         this.promo = promo;
-//        this.team = team;
-//        this.type = type;
     }
 
     /**
@@ -50,16 +46,7 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
 
-        throw new RuntimeException("Not implemented");
-//        if (type == ChessPiece.PieceType.PAWN){
-//            if (team == ChessGame.TeamColor.WHITE && endPos.getRow() == 7){
-//                return promo;
-//            }
-//            if (team == ChessGame.TeamColor.BLACK && endPos.getRow() == 0){
-//                return promo;
-//            }
-//        }
-//        return null;
-//    }
+        //throw new RuntimeException("Not implemented");
+        return promo;
     }
 }
