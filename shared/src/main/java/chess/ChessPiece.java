@@ -211,10 +211,10 @@ public class ChessPiece {
 
 
     }
-    private void queenMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
+//    private void queenMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
+//
+//        int row = myPosition.getRow();
+//        int col = myPosition.getColumn();
 
 
         //horizontal movement
@@ -241,28 +241,28 @@ public class ChessPiece {
 
 
         //diagnol movement
-        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-                break;
-            }
-        }
-        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-                break;
-            }
-        }
-
-    }
+//        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
+//            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+//                break;
+//            }
+//        }
+//        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
+//            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+//                break;
+//            }
+//        }
+//        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
+//            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+//                break;
+//            }
+//        }
+//        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
+//            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+//                break;
+//            }
+//        }
+//
+//    }
 
     private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
 
