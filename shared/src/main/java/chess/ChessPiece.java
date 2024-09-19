@@ -67,14 +67,14 @@ public class ChessPiece {
         if (type == PieceType.ROOK){
             rookMove(board, myPosition, validMoves);
         }
-        if (type == PieceType.KNIGHT){
-            knightMove(board, myPosition, validMoves);
-        }
         if (type == PieceType.BISHOP) {
             bishopMove(board, myPosition, validMoves);
         }
         if (type == PieceType.QUEEN){
             queenMove(board, myPosition, validMoves);
+        }
+        if (type == PieceType.KNIGHT){
+            knightMove(board, myPosition, validMoves);
         }
         if (type == PieceType.KING) {
             kingMove(board, myPosition, validMoves);
@@ -119,27 +119,134 @@ public class ChessPiece {
         int col = myPosition.getColumn();
 
         for (int c = col - 1; c >= 0; c--) {
-            if (!QKRmoves(board, myPosition, row, c, validMoves)){
+            if (!QBRmoves(board, myPosition, row, c, validMoves)){
                 break;
             }
         }
         for (int c = col + 1; c < 8; c++) {
-            if (!QKRmoves(board, myPosition, row, c, validMoves)){
+            if (!QBRmoves(board, myPosition, row, c, validMoves)){
                 break;
             }
         }
         for (int r = row - 1; r >= 0; r--) {
-            if (!QKRmoves(board, myPosition, r, col, validMoves)) {
+            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
                 break;
             }
         }
         for (int r = row + 1; r < 8; r++) {
-            if (!QKRmoves(board, myPosition, r, col, validMoves)) {
+            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
                 break;
             }
         }
 
     }
+
+    private void bishopMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
+
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+                break;
+            }
+        }
+        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+                break;
+            }
+        }
+
+
+    }
+    private void queenMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
+
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+
+        //horizontal movement
+        for (int c = col - 1; c >= 0; c--) {
+            if (!QBRmoves(board, myPosition, row, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col + 1; c < 8; c++) {
+            if (!QBRmoves(board, myPosition, row, c, validMoves)){
+                break;
+            }
+        }
+        for (int r = row - 1; r >= 0; r--) {
+            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
+                break;
+            }
+        }
+        for (int r = row + 1; r < 8; r++) {
+            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
+                break;
+            }
+        }
+
+
+        //diagnol movement
+        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+                break;
+            }
+        }
+        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
+            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
+                break;
+            }
+        }
+
+    }
+
+    private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
+
+        int[][] possibleMoves = {
+                {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+                {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+        };
+
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        for (int[] possibleMove : possibleMoves) {
+            int endRow = row + possibleMove[0];
+            int endCol = col + possibleMove[1];
+            if (moveAble(endRow, endCol)){
+                ChessPosition newPos = new ChessPosition(endRow, endCol);
+                ChessPiece pieceAtNewPos = board.getPiece(newPos);
+
+                if (pieceAtNewPos == null || theOpp(pieceAtNewPos)){
+                    validMoves.add(new ChessMove(myPosition, newPos, null));
+                }
+
+            }
+        }
+    }
+
 
 
 
@@ -154,10 +261,10 @@ public class ChessPiece {
         return piece != null && piece.getTeamColor() == this.pieceColor;
     }
 
-    //QKRmoves is how the queen, knight, and rook acts. if there is
+    //QBRmoves is how the queen, bishop, and rook acts. if there is
     //an opposing piece, then it takes and cant go further. if there
     //is a team piece, it gets blocked.
-    private boolean QKRmoves(ChessBoard board, ChessPosition startPos,
+    private boolean QBRmoves(ChessBoard board, ChessPosition startPos,
                              int endRow, int endCol, Collection<ChessMove> moves){
 
         if(!moveAble(endRow, endCol)){
