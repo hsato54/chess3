@@ -317,7 +317,7 @@ public class ChessPiece {
 
 
     private boolean moveAble(int row, int col) {
-        return row >= 0 && row < 8 && col >= 0 && col < 8;
+        return row >= 0 && row <= 8 && col >= 0 && col <= 8;
     }
     private boolean theOpp(ChessPiece piece) {
         return piece != null && piece.getTeamColor() != this.pieceColor;
