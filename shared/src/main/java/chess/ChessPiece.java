@@ -85,7 +85,9 @@ public class ChessPiece {
             bishopMove(board, myPosition, validMoves);
         }
         if (type == PieceType.QUEEN){
-            queenMove(board, myPosition, validMoves);
+            //queenMove(board, myPosition, validMoves);
+            bishopMove(board, myPosition, validMoves);
+            rookMove(board, myPosition, validMoves);
         }
         if (type == PieceType.KNIGHT){
             knightMove(board, myPosition, validMoves);
@@ -158,22 +160,22 @@ public class ChessPiece {
         int col = myPosition.getColumn();
 
 
-        for (int c = col - 1; c >= 0; c--) {
+        for (int c = col - 1; c > 0; c--) {
             if (!QBRmoves(board, myPosition, row, c, validMoves)){
                 break;
             }
         }
-        for (int c = col + 1; c < 8; c++) {
+        for (int c = col + 1; c <= 8; c++) {
             if (!QBRmoves(board, myPosition, row, c, validMoves)){
                 break;
             }
         }
-        for (int r = row - 1; r >= 0; r--) {
+        for (int r = row - 1; r > 0; r--) {
             if (!QBRmoves(board, myPosition, r, col, validMoves)) {
                 break;
             }
         }
-        for (int r = row + 1; r < 8; r++) {
+        for (int r = row + 1; r <= 8; r++) {
             if (!QBRmoves(board, myPosition, r, col, validMoves)) {
                 break;
             }
@@ -186,22 +188,22 @@ public class ChessPiece {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
 
-        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
+        for (int c = col - 1, r = row - 1; c > 0 && r > 0; c--, r--) {
             if (!QBRmoves(board, myPosition, r, c, validMoves)){
                 break;
             }
         }
-        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
+        for (int c = col + 1, r = row - 1; c <= 8 && r > 0; c++, r--) {
             if (!QBRmoves(board, myPosition, r, c, validMoves)){
                 break;
             }
         }
-        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
+        for (int c = col - 1, r = row + 1; c > 0 && r <= 8; c--, r++) {
             if (!QBRmoves(board, myPosition, r, c, validMoves)) {
                 break;
             }
         }
-        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
+        for (int c = col + 1, r = row + 1; c <= 8 && r <= 8; c++, r++) {
             if (!QBRmoves(board, myPosition, r, c, validMoves)) {
                 break;
             }
@@ -216,26 +218,26 @@ public class ChessPiece {
 
 
         //horizontal movement
-        for (int c = col - 1; c >= 0; c--) {
-            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col + 1; c < 8; c++) {
-            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-                break;
-            }
-        }
-        for (int r = row - 1; r >= 0; r--) {
-            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-                break;
-            }
-        }
-        for (int r = row + 1; r < 8; r++) {
-            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-                break;
-            }
-        }
+//        for (int c = col - 1; c >= 0; c--) {
+//            if (!QBRmoves(board, myPosition, row, c, validMoves)){
+//                break;
+//            }
+//        }
+//        for (int c = col + 1; c < 8; c++) {
+//            if (!QBRmoves(board, myPosition, row, c, validMoves)){
+//                break;
+//            }
+//        }
+//        for (int r = row - 1; r >= 0; r--) {
+//            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
+//                break;
+//            }
+//        }
+//        for (int r = row + 1; r < 8; r++) {
+//            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
+//                break;
+//            }
+//        }
 
 
         //diagnol movement
@@ -317,7 +319,7 @@ public class ChessPiece {
 
 
     private boolean moveAble(int row, int col) {
-        return row >= 0 && row <= 8 && col >= 0 && col <= 8;
+        return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
     private boolean theOpp(ChessPiece piece) {
         return piece != null && piece.getTeamColor() != this.pieceColor;
