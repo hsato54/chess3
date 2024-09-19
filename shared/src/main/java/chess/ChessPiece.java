@@ -64,6 +64,22 @@ public class ChessPiece {
         if (type == PieceType.PAWN) {
             pawnMove(board, myPosition, validMoves);
         }
+        if (type == PieceType.ROOK){
+            rookMove(board, myPosition, validMoves);
+        }
+        if (type == PieceType.KNIGHT){
+            knightMove(board, myPosition, validMoves);
+        }
+        if (type == PieceType.BISHOP) {
+            bishopMove(board, myPosition, validMoves);
+        }
+        if (type == PieceType.QUEEN){
+            queenMove(board, myPosition, validMoves);
+        }
+        if (type == PieceType.KING) {
+            kingMove(board, myPosition, validMoves);
+        }
+
         return validMoves;
     }
 
@@ -95,14 +111,74 @@ public class ChessPiece {
         if (moveAble(row + direction, col + 1) && theOpp(board.getPiece(new ChessPosition(row + direction, col + 1)))){
             validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), null));
         }
+    }
 
+    private void rookMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
 
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        for (int c = col - 1; c >= 0; c--) {
+            if (!QKRmoves(board, myPosition, row, c, validMoves)){
+                break;
+            }
+        }
+        for (int c = col + 1; c < 8; c++) {
+            if (!QKRmoves(board, myPosition, row, c, validMoves)){
+                break;
+            }
+        }
+        for (int r = row - 1; r >= 0; r--) {
+            if (!QKRmoves(board, myPosition, r, col, validMoves)) {
+                break;
+            }
+        }
+        for (int r = row + 1; r < 8; r++) {
+            if (!QKRmoves(board, myPosition, r, col, validMoves)) {
+                break;
+            }
+        }
 
     }
+
+
+
+
     private boolean moveAble(int row, int col) {
         return row >= 0 && row < 8 && col >= 0 && col < 8;
     }
     private boolean theOpp(ChessPiece piece) {
         return piece != null && piece.getTeamColor() != this.pieceColor;
+    }
+    private boolean friendlyBlock(ChessPiece piece) {
+        return piece != null && piece.getTeamColor() == this.pieceColor;
+    }
+
+    //QKRmoves is how the queen, knight, and rook acts. if there is
+    //an opposing piece, then it takes and cant go further. if there
+    //is a team piece, it gets blocked.
+    private boolean QKRmoves(ChessBoard board, ChessPosition startPos,
+                             int endRow, int endCol, Collection<ChessMove> moves){
+
+        if(!moveAble(endRow, endCol)){
+            return false;
+        }
+
+        ChessPosition endPos = new ChessPosition(endRow, endCol);
+        ChessPiece endPiece = board.getPiece(endPos);
+
+        if (endPiece == null){
+            moves.add(new ChessMove(startPos, endPos, null));
+            return true;
+        }
+        else if (friendlyBlock(endPiece)){
+            return false;
+        }
+        else if (theOpp(endPiece)){
+            moves.add(new ChessMove(startPos, endPos, null));
+            return false;
+        }
+        return true;
+
     }
 }
