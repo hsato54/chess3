@@ -247,6 +247,31 @@ public class ChessPiece {
         }
     }
 
+    private void kingMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
+        int[][] possibleMoves = {
+                {1, -1}, {1, 0}, {1, 1},
+                {0, -1},         {0, 1},
+                {-1, -1}, {-1, 0}, {-1, 1}
+        };
+
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        for (int[] possibleMove : possibleMoves) {
+            int endRow = row + possibleMove[0];
+            int endCol = col + possibleMove[1];
+            if (moveAble(endRow, endCol)){
+                ChessPosition newPos = new ChessPosition(endRow, endCol);
+                ChessPiece pieceAtNewPos = board.getPiece(newPos);
+
+                if (pieceAtNewPos == null || theOpp(pieceAtNewPos)){
+                    validMoves.add(new ChessMove(myPosition, newPos, null));
+                }
+
+            }
+        }
+    }
+
 
 
 
