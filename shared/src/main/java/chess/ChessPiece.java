@@ -211,58 +211,6 @@ public class ChessPiece {
 
 
     }
-//    private void queenMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-//
-//        int row = myPosition.getRow();
-//        int col = myPosition.getColumn();
-
-
-        //horizontal movement
-//        for (int c = col - 1; c >= 0; c--) {
-//            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-//                break;
-//            }
-//        }
-//        for (int c = col + 1; c < 8; c++) {
-//            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-//                break;
-//            }
-//        }
-//        for (int r = row - 1; r >= 0; r--) {
-//            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-//                break;
-//            }
-//        }
-//        for (int r = row + 1; r < 8; r++) {
-//            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-//                break;
-//            }
-//        }
-
-
-        //diagnol movement
-//        for (int c = col - 1, r = row - 1; c >= 0 && r >= 0; c--, r--) {
-//            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-//                break;
-//            }
-//        }
-//        for (int c = col + 1, r = row - 1; c < 8 && r >= 0; c++, r--) {
-//            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-//                break;
-//            }
-//        }
-//        for (int c = col - 1, r = row + 1; c >= 0 && r < 8; c--, r++) {
-//            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-//                break;
-//            }
-//        }
-//        for (int c = col + 1, r = row + 1; c < 8 && r < 8; c++, r++) {
-//            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-//                break;
-//            }
-//        }
-//
-//    }
 
     private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
 
