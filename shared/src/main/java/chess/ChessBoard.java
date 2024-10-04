@@ -64,6 +64,14 @@ public class ChessBoard {
         }
         return board[row][col];
     }
+    public ChessGame.TeamColor getTeamInTheLocation(ChessPosition position) {
+        if (getPiece(position) != null) {
+            return getPiece(position).getTeamColor();
+        }
+        else {
+            return null;
+        }
+    }
 
     public void resetBoard() {
         //throw new RuntimeException("Not implemented");
