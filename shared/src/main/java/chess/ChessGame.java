@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
 /**
  * For a class that can manage a chess game, making moves on a board
  * <p>
@@ -20,6 +18,7 @@ public class ChessGame {
 
     public ChessGame() {
         this.board = new ChessBoard();
+        board.resetBoard();
         this.currentTeamTurn = TeamColor.WHITE;
     }
 
@@ -69,11 +68,12 @@ public class ChessGame {
         Collection<ChessMove> validMoves = new ArrayList<>();
 
         for (ChessMove move : moves) {
+            ChessPiece endpiece = board.getPiece(move.getEndPosition());
             sim(move);
             if (!isInCheck(piece.getTeamColor())) {
                 validMoves.add(move);
             }
-            undo(move);
+            undo(move, endpiece);
         }
         return validMoves;
     }
@@ -108,7 +108,8 @@ public class ChessGame {
 
         if (currentTeamTurn == TeamColor.WHITE) {
             currentTeamTurn = TeamColor.BLACK;
-        } else {
+        }
+        else {
             currentTeamTurn = TeamColor.WHITE;
         }
     }
@@ -121,7 +122,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         //throw new RuntimeException("Not implemented");
-        ChessPosition kingPosition = findKingPosition(teamColor);
+        ChessPosition kingPosition = findKing(teamColor);
 
         TeamColor myOpp;
         if (teamColor == TeamColor.WHITE) {
@@ -133,7 +134,7 @@ public class ChessGame {
         Collection<ChessPiece> opponentPieces = getTeamPieces(myOpp);
 
         for (ChessPiece piece : opponentPieces) {
-            Collection<ChessMove> moves = piece.pieceMoves(board, findPiecePosition(piece));
+            Collection<ChessMove> moves = piece.pieceMoves(board, findPiece(piece));
             for (ChessMove move : moves) {
                 if (move.getEndPosition().equals(kingPosition)) {
                     return true;
@@ -143,7 +144,7 @@ public class ChessGame {
         return false;
     }
 
-    private ChessPosition findPiecePosition(ChessPiece piece) {
+    private ChessPosition findPiece(ChessPiece piece) {
         for (int row = 0; row <= 8; row++) {
             for (int col = 0; col <= 8; col++) {
                 if (board.getPiece(new ChessPosition(row, col)) == piece) {
@@ -165,7 +166,7 @@ public class ChessGame {
         }
         return pieces;
     }
-    private ChessPosition findKingPosition(TeamColor teamColor) {
+    private ChessPosition findKing(TeamColor teamColor) {
         for (int row = 0; row <= 8; row++) {
             for (int col = 0; col <= 8; col++) {
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
@@ -192,21 +193,19 @@ public class ChessGame {
         }
         Collection<ChessPiece> teamPieces = getTeamPieces(teamColor);
         for (ChessPiece piece : teamPieces) {
-            ChessPosition currentPosition = findPiecePosition(piece);
+            ChessPosition currentPosition = findPiece(piece);
             Collection<ChessMove> moves = piece.pieceMoves(board, currentPosition);
             for (ChessMove move : moves) {
+                ChessPiece endpiece = board.getPiece(move.getEndPosition());
                 sim(move);
                 if (!isInCheck(teamColor)) {
-                    undo(move);
+                    undo(move, endpiece);
                     return false;
                 }
-                undo(move);
+                undo(move, endpiece);
             }
         }
-
-
         return true;
-        //
     }
 
     /**
@@ -224,7 +223,7 @@ public class ChessGame {
 
         Collection<ChessPiece> teamPieces = getTeamPieces(teamColor);
         for (ChessPiece piece : teamPieces) {
-            ChessPosition position = findPiecePosition(piece);
+            ChessPosition position = findPiece(piece);
             Collection<ChessMove> moves = validMoves(position);
             if (moves != null && !moves.isEmpty()) {
                 return false;
@@ -239,10 +238,10 @@ public class ChessGame {
         board.addPiece(move.getEndPosition(), piece);
     }
 
-    private void undo(ChessMove move) {
+    private void undo(ChessMove move, ChessPiece endpiece) {
         ChessPiece piece = board.getPiece(move.getEndPosition());
-        board.removePiece(move.getEndPosition());
         board.addPiece(move.getStartPosition(), piece);
+        board.addPiece(move.getEndPosition(), endpiece);
     }
 
     /**
