@@ -27,7 +27,7 @@ public class UserService {
         userDAO.createUser(user);
 
         String authToken = UUID.randomUUID().toString();
-        AuthData authData = new AuthData(user.username(), authToken);
+        AuthData authData = new AuthData(authToken, user.username());
         authDAO.createAuth(authData);
         return authData;
     }
@@ -35,6 +35,23 @@ public class UserService {
     public AuthData login(UserData user) throws DataAccessException{
         UserData existingUser = userDAO.getUser(user.username());
 
+        if (existingUser == null || !existingUser.password().equals(user.password())) {
+            throw new DataAccessException("Invalid username or password.");
+        }
+
+        String authToken = UUID.randomUUID().toString();
+        AuthData authData = new AuthData(authToken, user.username());
+        authDAO.createAuth(authData);
+        return authData;
+    }
+
+    public void logout(AuthData auth){
+        authDAO.deleteAuth(auth.authToken());
+    }
+
+    public void clear(){
+        userDAO.clear();
+        authDAO.clear();
     }
 
 
