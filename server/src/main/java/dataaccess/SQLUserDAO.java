@@ -34,7 +34,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        String sql = "INSERT into users";
+        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
