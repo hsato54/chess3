@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
+import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
@@ -39,24 +40,12 @@ public class UserHandler {
         }
     }
 
-    public Object login(Request req, Response resp){
-        try {
+    public Object login(Request req, Response resp) throws DataAccessException {
             UserData userData = gson.fromJson(req.body(), UserData.class);
 
             AuthData authData = userService.login(userData);
             resp.status(200);
             return gson.toJson(authData);
-
-        } catch (UnauthorizedException e) {
-            resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: Invalid credentials."));
-        } catch (BadRequestException e) {
-            resp.status(400);
-            return gson.toJson(new ErrorResponse("Bad Request: " + e.getMessage()));
-        } catch (Exception e) {
-            resp.status(500);
-            return gson.toJson(new ErrorResponse("Internal Server Error: " + e.getMessage()));
-        }
     }
 
     public Object logout(Request req, Response resp) {
@@ -65,7 +54,7 @@ public class UserHandler {
             String authToken = req.headers("authorization");
 
             if (authToken == null || authToken.isEmpty()) {
-                throw new UnauthorizedException("Authorization token missing.");
+                throw new UnauthorizedException();
             }
 
             // Perform logout using the auth token

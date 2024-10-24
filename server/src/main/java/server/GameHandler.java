@@ -8,6 +8,8 @@ import service.GameService;
 import spark.Request;
 import spark.Response;
 
+import java.util.List;
+
 public class GameHandler {
 
     private final GameService gameService;
@@ -17,76 +19,79 @@ public class GameHandler {
         this.gameService = gameService;
     }
 
-    public Object createGame(Request req, Response resp) throws UnauthorizedException {
+    public Object listGames(Request req, Response resp) {
         String authToken = req.headers("authorization");
 
         try {
-            // Parse the request body to get the game name
-            CreateGameRequest createGameRequest = gson.fromJson(req.body(), CreateGameRequest.class);
+            List<GameData> games = gameService.listGames(authToken);
 
-            // Create the game and return the game ID
-            int gameID = gameService.createGame(authToken, createGameRequest.gameName());
-            resp.status(200);
-            return gson.toJson(new CreateGameResponse(gameID));
-
-        } catch (BadRequestException e) {
-            resp.status(400);
-            return gson.toJson(new ErrorResponse("Bad Request: " + e.getMessage()));
-        } catch (UnauthorizedException e) {
-            resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
-        }
-    }
-
-    public Object joinGame(Request req, Response resp) throws UnauthorizedException {
-        String authToken = req.headers("authorization");
-
-        try {
-            JoinGameRequest joinRequest = gson.fromJson(req.body(), JoinGameRequest.class);
-
-            // Join the game with the given game ID and color
-            boolean success = gameService.joinGame(authToken, joinRequest.gameID(), joinRequest.playerColor());
-
-            resp.status(200);
-            return gson.toJson(new JoinGameResponse(success));
-
-        } catch (BadRequestException e) {
-            resp.status(400);
-            return gson.toJson(new ErrorResponse("Bad Request: " + e.getMessage()));
-        } catch (UnauthorizedException e) {
-            resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
-        }
-    }
-
-    public Object listGames(Request req, Response resp) throws UnauthorizedException {
-        String authToken = req.headers("authorization");
-
-        try {
-            var games = gameService.listGames(authToken);
             resp.status(200);
             return gson.toJson(games);
+
         } catch (UnauthorizedException e) {
             resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
+            return gson.toJson(new ErrorResponse("Error: Unauthorized access"));
         }
     }
 
-    public Object updateGame(Request req, Response resp) throws UnauthorizedException, BadRequestException {
+
+    public Object createGame(Request req, Response resp) {
         String authToken = req.headers("authorization");
 
         try {
+            if (!req.body().contains("\"gameName\":")) {
+                throw new BadRequestException("No gameName provided");
+            }
+
             GameData gameData = gson.fromJson(req.body(), GameData.class);
-            gameService.updateGame(authToken, gameData);
+            String gameName = gameData.gameName();
+
+            int gameID = gameService.createGame(authToken, gameName);
+
             resp.status(200);
-            return "{}";
-        } catch (BadRequestException e) {
-            resp.status(400);
-            return gson.toJson(new ErrorResponse("Bad Request: " + e.getMessage()));
+            return String.format("{ \"gameID\": %d }", gameID);
+
         } catch (UnauthorizedException e) {
             resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
+            return gson.toJson(new ErrorResponse("Error: Unauthorized access"));
+
+        } catch (BadRequestException e) {
+            resp.status(400);
+            return gson.toJson(new ErrorResponse("Error: Bad request - " + e.getMessage()));
         }
     }
 
+    public Object joinGame(Request req, Response resp) {
+        String authToken = req.headers("authorization");
+
+        try {
+            if (!req.body().contains("\"gameID\":")) {
+                throw new BadRequestException("No gameID provided");
+            }
+
+            JoinGameData joinData = gson.fromJson(req.body(), JoinGameData.class);
+
+            boolean joinSuccess = gameService.joinGame(authToken, joinData.gameID(), joinData.playerColor());
+
+            if (!joinSuccess) {
+                resp.status(403); // Forbidden: Spot already taken
+                return gson.toJson(new ErrorResponse("Error: Spot already taken"));
+            }
+
+            resp.status(200);
+            return "{}"; // Empty JSON object for success
+
+        } catch (UnauthorizedException e) {
+            resp.status(401);
+            return gson.toJson(new ErrorResponse("Error: Unauthorized access"));
+
+        } catch (BadRequestException e) {
+            resp.status(400);
+            return gson.toJson(new ErrorResponse("Error: Bad request - " + e.getMessage()));
+        }
+    }
+
+    private record JoinGameData(String playerColor, int gameID) {}
+
+    private record ErrorResponse(String message) {}
 }
