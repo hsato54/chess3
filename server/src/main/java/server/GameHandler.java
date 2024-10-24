@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
+import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import model.GameData;
 import service.GameService;
@@ -58,6 +59,8 @@ public class GameHandler {
         } catch (BadRequestException e) {
             resp.status(400);
             return gson.toJson(new ErrorResponse("Error: Bad request - " + e.getMessage()));
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 

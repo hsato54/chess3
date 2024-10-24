@@ -54,6 +54,10 @@ public class MemoryGameDAO implements GameDAO {
     public List<GameData> listGames() {
         return new ArrayList<>(games);
     }
+    @Override
+    public boolean gameExists(int gameID) {
+        return games.stream().anyMatch(game -> game.gameID() == gameID);
+    }
 
 
 

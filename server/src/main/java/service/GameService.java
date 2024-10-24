@@ -33,7 +33,7 @@ public class GameService {
     }
 
 
-    public int createGame(String authToken, String gameName) throws UnauthorizedException, BadRequestException {
+    public int createGame(String authToken, String gameName) throws UnauthorizedException, BadRequestException, DataAccessException {
         verifyAuthToken(authToken);
         int gameID = generateUniqueGameId();
         try {
@@ -78,7 +78,7 @@ public class GameService {
     }
 
     // Generate a unique game ID
-    private int generateUniqueGameId() {
+    private int generateUniqueGameId() throws DataAccessException {
         int gameID;
         do {
             gameID = ThreadLocalRandom.current().nextInt(1, 10000);
@@ -100,33 +100,36 @@ public class GameService {
         String whiteUser = gameData.whiteUsername();
         String blackUser = gameData.blackUsername();
 
+        // Ensure that color is valid
+        if (color == null || (!color.equalsIgnoreCase("WHITE") && !color.equalsIgnoreCase("BLACK"))) {
+            throw new BadRequestException("Invalid color: " + color);
+        }
+
         switch (color.toUpperCase()) {
             case "WHITE":
                 if (whiteUser != null && !whiteUser.equals(authData.username())) {
                     return false; // White spot is already taken
                 }
-                gameData.setWhiteUsername(authData.username());
+                // Create a new GameData object with the updated whiteUsername
+                gameData = new GameData(gameData.gameID(), authData.username(), blackUser, gameData.gameName(), gameData.game());
                 break;
             case "BLACK":
                 if (blackUser != null && !blackUser.equals(authData.username())) {
                     return false; // Black spot is already taken
                 }
-                gameData.setBlackUsername(authData.username());
+                // Create a new GameData object with the updated blackUsername
+                gameData = new GameData(gameData.gameID(), whiteUser, authData.username(), gameData.gameName(), gameData.game());
                 break;
-            default:
-                throw new BadRequestException("Invalid color specified.");
         }
 
-        return true;
+        return true; // Successfully assigned the player
     }
+
+
 
     // Update the game data with player information
     private void updateGameWithPlayers(GameData gameData, int gameID) throws BadRequestException {
-        try {
-            gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
-        } catch (DataAccessException e) {
-            throw new BadRequestException("Error updating game: " + e.getMessage());
-        }
+        gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
     }
 
     public void clear() {

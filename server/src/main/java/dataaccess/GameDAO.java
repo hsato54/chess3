@@ -11,5 +11,6 @@ public interface GameDAO{
     void deleteGame(int gameID);
     void clear();
     List<GameData> listGames();
+    boolean gameExists(int gameID) throws DataAccessException;
 
 }
