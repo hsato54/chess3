@@ -45,8 +45,12 @@ public class UserService {
         return authData;
     }
 
-    public void logout(AuthData auth){
-        authDAO.deleteAuth(auth.authToken());
+    public void logout(String authToken) throws DataAccessException {
+        // Delete the authToken from the database
+        if (authDAO.getAuth(authToken) == null) {
+            throw new DataAccessException("Invalid auth token.");
+        }
+        authDAO.deleteAuth(authToken);
     }
 
     public void clear(){
