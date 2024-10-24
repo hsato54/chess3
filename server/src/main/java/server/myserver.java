@@ -38,5 +38,4 @@ public class ServerExample {
         return listNames(req, res);
     }
 
-    //
 }
