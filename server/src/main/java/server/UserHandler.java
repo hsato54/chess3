@@ -35,7 +35,7 @@ public class UserHandler {
 
         } catch (BadRequestException e) {
             resp.status(400);
-            return gson.toJson(new ErrorResponse("Bad Request: " + e.getMessage()));
+            return gson.toJson(new ErrorResponse("Bad Request: error" + e.getMessage()));
         } catch (Exception e) {
             resp.status(403);
             return gson.toJson(new ErrorResponse("Error: Username already taken"));
@@ -52,7 +52,7 @@ public class UserHandler {
         }
         catch(DataAccessException e) {
             resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
+            return gson.toJson(new ErrorResponse("Unauthorized: error" + e.getMessage()));
         }
         resp.status(200);
         return gson.toJson(authData);
@@ -72,11 +72,8 @@ public class UserHandler {
             resp.status(200);
             return "{}";
 
-        } catch (UnauthorizedException e) {
-            resp.status(401);
-            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
         } catch (Exception e) {
-            resp.status(500);
+            resp.status(401);
             return gson.toJson(new ErrorResponse("Internal Server Error: " + e.getMessage()));
         }
     }

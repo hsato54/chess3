@@ -5,6 +5,7 @@ import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import model.GameData;
+import model.ListGames;
 import service.GameService;
 import spark.Request;
 import spark.Response;
@@ -27,7 +28,7 @@ public class GameHandler {
             List<GameData> games = gameService.listGames(authToken);
 
             resp.status(200);
-            return gson.toJson(games);
+            return gson.toJson(new ListGames(games));
 
         } catch (UnauthorizedException e) {
             resp.status(401);
