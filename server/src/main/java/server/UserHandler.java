@@ -10,7 +10,6 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
-import javax.xml.crypto.Data;
 
 public class UserHandler {
 
@@ -67,7 +66,6 @@ public class UserHandler {
                 throw new UnauthorizedException();
             }
 
-            // Perform logout using the auth token
             userService.logout(authToken);
             resp.status(200);
             return "{}";

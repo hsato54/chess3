@@ -32,16 +32,16 @@ public class MemoryUserDAO implements UserDAO {
         return null;
     }
 
-    @Override
-    public void updateUser(UserData updatedUser){
-        users.removeIf(user -> user.username().equals(updatedUser.username()));
-        users.add(updatedUser);
-    }
+//    @Override
+//    public void updateUser(UserData updatedUser){
+//        users.removeIf(user -> user.username().equals(updatedUser.username()));
+//        users.add(updatedUser);
+//    }
 
-    @Override
-    public void deleteUser(String username){
-        users.removeIf(user -> user.username().equals(username));
-    }
+//    @Override
+//    public void deleteUser(String username){
+//        users.removeIf(user -> user.username().equals(username));
+//    }
 
     @Override
     public void clear(){
