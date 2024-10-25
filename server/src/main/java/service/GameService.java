@@ -132,9 +132,6 @@ public class GameService {
         gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
     }
 
-    public void clear() {
-        gameDAO.clear();
-    }
 
 
 }
