@@ -77,12 +77,12 @@ public class GameHandler {
             boolean joinSuccess = gameService.joinGame(authToken, joinData.gameID(), joinData.playerColor());
 
             if (!joinSuccess) {
-                resp.status(403); // Forbidden: Spot already taken
+                resp.status(403);
                 return gson.toJson(new ErrorResponse("Error: Spot already taken"));
             }
 
             resp.status(200);
-            return "{}"; // Empty JSON object for success
+            return "{}";
 
         } catch (UnauthorizedException e) {
             resp.status(401);

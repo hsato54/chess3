@@ -10,6 +10,8 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
+import javax.xml.crypto.Data;
+
 public class UserHandler {
 
     private final UserService userService;
@@ -40,12 +42,20 @@ public class UserHandler {
         }
     }
 
-    public Object login(Request req, Response resp) throws DataAccessException {
-            UserData userData = gson.fromJson(req.body(), UserData.class);
+    public Object login(Request req, Response resp) {
 
-            AuthData authData = userService.login(userData);
-            resp.status(200);
-            return gson.toJson(authData);
+        UserData userData = gson.fromJson(req.body(), UserData.class);
+        AuthData authData = null;
+
+        try {
+            authData = userService.login(userData);
+        }
+        catch(DataAccessException e) {
+            resp.status(401);
+            return gson.toJson(new ErrorResponse("Unauthorized: " + e.getMessage()));
+        }
+        resp.status(200);
+        return gson.toJson(authData);
     }
 
     public Object logout(Request req, Response resp) {
