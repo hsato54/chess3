@@ -12,6 +12,7 @@ public class ClearServiceTest {
 
     private static ClearService clearService;
     private static UserDAO userDAO;
+    private static GameDAO gameDAO;
     private static AuthDAO authDAO;
 
     @BeforeAll
@@ -19,7 +20,7 @@ public class ClearServiceTest {
         // Initialize DAOs and ClearService
         userDAO = new MemoryUserDAO();
         authDAO = new MemoryAuthDAO();
-        clearService = new ClearService(userDAO, authDAO);
+        clearService = new ClearService(userDAO, gameDAO, authDAO);
     }
 
     @BeforeEach
