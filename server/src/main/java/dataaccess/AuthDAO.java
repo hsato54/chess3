@@ -9,4 +9,5 @@ public interface AuthDAO {
     void deleteAuth(String authToken);
     void clear();
 
+    void addAuth(AuthData authData);
 }

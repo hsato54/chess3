@@ -4,15 +4,15 @@ import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
 
 public class ClearService {
-    private UserDAO userDAO;
-    private AuthDAO authDAO;
+    private static UserDAO userDAO;
+    private static AuthDAO authDAO;
 
     public ClearService(UserDAO userDAO, AuthDAO authDAO) {
-        this.userDAO = userDAO;
-        this.authDAO = authDAO;
+        ClearService.userDAO = userDAO;
+        ClearService.authDAO = authDAO;
     }
 
-    public void clear() {
+    public static void clear() {
         userDAO.clear();
         authDAO.clear();
     }
