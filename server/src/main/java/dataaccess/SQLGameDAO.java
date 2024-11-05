@@ -1,4 +1,4 @@
-package dataAccess;
+package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
 
@@ -43,7 +44,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public HashSet<GameData> listGames() {
+    public List<GameData> listGames() {
         HashSet<GameData> games = new HashSet<>();
         String query = "SELECT gameID, whiteUsername, blackUsername, gameName, chessGame FROM game";
 
@@ -62,7 +63,7 @@ public class SQLGameDAO implements GameDAO {
         } catch (SQLException | DataAccessException e) {
             e.printStackTrace();
         }
-        return games;
+        return (List<GameData>) games;
     }
 
     @Override
