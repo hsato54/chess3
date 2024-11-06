@@ -65,7 +65,7 @@ public class SQLAuthDAO implements AuthDAO {
             stmt.setString(2, authData.authToken());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating auth entry: " + e.getMessage(), e);
+            throw new DataAccessException("Error creating auth entry: " + e.getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error fetching auth data: " + e.getMessage(), e);
+            throw new DataAccessException("Error fetching auth data: " + e.getMessage());
         }
     }
 

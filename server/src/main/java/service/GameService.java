@@ -42,7 +42,7 @@ public class GameService {
 
         return gameID;
     }
-    public boolean joinGame(String authToken, int gameID, String color) throws UnauthorizedException, BadRequestException {
+    public boolean joinGame(String authToken, int gameID, String color) throws UnauthorizedException, BadRequestException, DataAccessException {
         AuthData authData = verifyAuthToken(authToken);
 
         GameData gameData = fetchGameById(gameID);
@@ -114,7 +114,7 @@ public class GameService {
 
 
 
-    private void updateGameWithPlayers(GameData gameData, int gameID) throws BadRequestException {
+    private void updateGameWithPlayers(GameData gameData, int gameID) throws BadRequestException, DataAccessException {
         gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
     }
 
