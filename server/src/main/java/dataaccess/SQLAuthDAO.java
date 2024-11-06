@@ -33,16 +33,10 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public void addAuth(AuthData authData) {
-        String insertSQL = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
-
-            stmt.setString(1, authData.username());
-            stmt.setString(2, authData.authToken());
-            stmt.executeUpdate();
-        } catch (SQLException | DataAccessException e) {
-            e.printStackTrace(); // Logging the exception for debugging; adjust as needed.
+        try {
+            createAuth(authData);
+        } catch (DataAccessException e) {
+            e.printStackTrace(); // Log error for debugging.
         }
     }
 
@@ -62,7 +56,17 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public void createAuth(AuthData authData) throws DataAccessException {
+        String insertSQL = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
 
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
+
+            stmt.setString(1, authData.username());
+            stmt.setString(2, authData.authToken());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error creating auth entry: " + e.getMessage(), e);
+        }
     }
 
     @Override
