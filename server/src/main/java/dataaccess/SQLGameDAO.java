@@ -63,7 +63,7 @@ public class SQLGameDAO implements GameDAO {
         } catch (SQLException | DataAccessException e) {
             e.printStackTrace();
         }
-        return (List<GameData>) games;
+        return games.stream().toList();
     }
 
     @Override

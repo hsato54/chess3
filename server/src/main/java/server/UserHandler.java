@@ -55,8 +55,6 @@ public class UserHandler {
         }
         resp.status(200);
         return gson.toJson(authData);
-
-
     }
 
     public Object logout(Request req, Response resp) {
