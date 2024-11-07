@@ -41,8 +41,10 @@ public class SQLUserDAO implements UserDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+
             stmt.setString(1, user.username());
-            stmt.setString(2, user.password());
+            stmt.setString(2, hashedPassword);
             stmt.setString(3, user.email());
 
             stmt.executeUpdate();
