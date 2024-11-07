@@ -1,51 +1,78 @@
-import dataaccess.SQLUserDAO;
-import dataaccess.DataAccessException;
+package dataaccess;
+
 import model.UserData;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SQLUserDAOTest {
 
-    private SQLUserDAO userDAO;
+    private static SQLUserDAO userDAO;
 
     @BeforeAll
-    static void setUpBeforeClass() {
-        // Configure H2 as an in-memory database for tests
-        JdbcDataSource dataSource = new JdbcDataSource();
-        dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        dataSource.setUser("sa");
-        dataSource.setPassword("");
-
-        DatabaseManager.setDataSource(dataSource); // Assume DatabaseManager can set a custom DataSource
+    static void init() {
+        DatabaseManager.setTestConnection("jdbc:mysql://localhost/test_db", "test_user", "test_password");
+        userDAO = new SQLUserDAO();
     }
 
     @BeforeEach
-    void setUp() throws DataAccessException {
-        userDAO = new SQLUserDAO();
-
-        // Create the users table in H2
-        try (var conn = DatabaseManager.getConnection();
-             var stmt = conn.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS users (
-                    username VARCHAR(255) NOT NULL,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(255),
-                    PRIMARY KEY (username)
-                )
-            """);
-        } catch (SQLException e) {
-            throw new DataAccessException("Error setting up test database", e);
-        }
-
-        // Clear the table before each test
+    void setup() throws DataAccessException {
         userDAO.clear();
+        userDAO.createUser(new UserData("testUser", "password", "test@example.com"));
+    }
+
+    @Test
+    @DisplayName("Create User - Positive Case")
+    void createUserTestPositive() throws DataAccessException {
+        UserData newUser = new UserData("newUser", "newPassword", "new@example.com");
+        userDAO.createUser(newUser);
+
+        UserData retrievedUser = userDAO.getUser("newUser");
+        assertNotNull(retrievedUser, "User should be created successfully");
+        assertEquals("newUser", retrievedUser.username(), "Usernames should match");
+        assertEquals("newPassword", retrievedUser.password(), "Passwords should match");
+        assertEquals("new@example.com", retrievedUser.email(), "Emails should match");
+    }
+
+    @Test
+    @DisplayName("Create User with Duplicate Username - Negative Case")
+    void createUserTestNegative() {
+        UserData duplicateUser = new UserData("testUser", "password", "duplicate@example.com");
+
+        assertThrows(DataAccessException.class, () -> userDAO.createUser(duplicateUser),
+                "Creating a user with duplicate username should throw an exception");
+    }
+
+    @Test
+    @DisplayName("Get Existing User - Positive Case")
+    void getUserTestPositive() throws DataAccessException {
+        UserData retrievedUser = userDAO.getUser("testUser");
+
+        assertNotNull(retrievedUser, "User should exist in the database");
+        assertEquals("testUser", retrievedUser.username(), "Usernames should match");
+        assertEquals("password", retrievedUser.password(), "Passwords should match");
+        assertEquals("test@example.com", retrievedUser.email(), "Emails should match");
+    }
+
+    @Test
+    @DisplayName("Get Non-Existent User - Negative Case")
+    void getUserTestNegative() throws DataAccessException {
+        UserData retrievedUser = userDAO.getUser("nonExistentUser");
+        assertNull(retrievedUser, "Non-existent user should return null");
+    }
+
+    @Test
+    @DisplayName("Clear User Data - Positive Case")
+    void clearTestPositive() throws DataAccessException {
+        assertNotNull(userDAO.getUser("testUser"), "UserDAO should contain user data before clear");
+
+        userDAO.clear();
+
+        assertNull(userDAO.getUser("testUser"), "UserDAO should be empty after clear");
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws DataAccessException {
         userDAO.clear();
     }
 }

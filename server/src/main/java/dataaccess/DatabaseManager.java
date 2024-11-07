@@ -69,4 +69,7 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
+
+    public static void setTestConnection(String s, String testUser, String testPassword) {
+    }
 }
