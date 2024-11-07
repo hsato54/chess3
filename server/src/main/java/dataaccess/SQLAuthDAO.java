@@ -12,7 +12,6 @@ public class SQLAuthDAO implements AuthDAO {
         initializeDatabase();
     }
 
-    // Initializes the database and creates the auth table if it does not exist
     private void initializeDatabase() {
         try {
             DatabaseManager.createDatabase();
@@ -36,7 +35,7 @@ public class SQLAuthDAO implements AuthDAO {
         try {
             createAuth(authData);
         } catch (DataAccessException e) {
-            e.printStackTrace(); // Log error for debugging.
+            e.printStackTrace();
         }
     }
 
@@ -50,7 +49,7 @@ public class SQLAuthDAO implements AuthDAO {
             stmt.setString(1, authToken);
             stmt.executeUpdate();
         } catch (SQLException | DataAccessException e) {
-            e.printStackTrace(); // Log error for debugging.
+            e.printStackTrace();
         }
     }
 
