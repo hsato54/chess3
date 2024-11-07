@@ -79,7 +79,7 @@ public class SQLAuthDAO implements AuthDAO {
             try (ResultSet results = stmt.executeQuery()) {
                 if (results.next()) {
                     String username = results.getString("username");
-                    return new AuthData(username, authToken);
+                    return new AuthData(authToken, username);
                 } else {
                     throw new DataAccessException("Auth token not found: " + authToken);
                 }
