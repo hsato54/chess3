@@ -4,7 +4,6 @@ package ui;
 import java.util.Scanner;
 
 import static java.lang.System.out;
-import static ui.EscapeSequences.*;
 public class PreloginUI {
 
     ServerFacade server;
