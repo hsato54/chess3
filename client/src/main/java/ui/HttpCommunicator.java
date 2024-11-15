@@ -77,6 +77,10 @@ public class HttpCommunicator {
         return !resp.containsKey("Error");
     }
 
+    public String getAuthToken() {
+        return facade.getAuthToken();
+    }
+
     private Map<String, Object> sendPostRequest(String endpoint, String body) {
         return sendRequest("POST", endpoint, body);
     }

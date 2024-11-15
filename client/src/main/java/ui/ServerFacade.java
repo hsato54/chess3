@@ -18,7 +18,7 @@ public class ServerFacade {
         http = new HttpCommunicator(this, serverDomain);
     }
 
-    protected String getAuthToken() {
+    public String getAuthToken() {
         return authToken;
     }
 
