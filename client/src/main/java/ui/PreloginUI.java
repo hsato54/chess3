@@ -12,7 +12,7 @@ public class PreloginUI {
 
     public PreloginUI(ServerFacade server) {
         this.server = server;
-        postloginUI = new PostloginUI(server);
+        this.postloginUI = new PostloginUI(server);
     }
     public void run() {
         out.println(EscapeSequences.WHITE_KING + " Welcome to 240 chess. Type Help to get started. " + EscapeSequences.WHITE_KING);
@@ -38,7 +38,6 @@ public class PreloginUI {
                 out.println("Unknown command, please try again. Type 'help' for available commands");
             }
         }
-        postloginUI.run();
     }
 
     private void displayHelp(){

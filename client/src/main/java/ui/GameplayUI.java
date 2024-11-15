@@ -60,25 +60,31 @@ public class GameplayUI {
         System.out.println();
     }
 
-    private String getPieceSymbol(int row, int column) {
-        StringBuilder output = new StringBuilder();
-        ChessGame game = null;
-        ChessPiece piece = game.getBoard().getPiece(new ChessPosition(row, column));
+    private void printPiece(ChessPiece piece) {
 
-        if (piece != null) {
-            output.append(piece.getTeamColor() == ChessGame.TeamColor.WHITE ? SET_TEXT_COLOR_WHITE : SET_TEXT_COLOR_BLACK);
+        String pieceSymbol;
+
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
             switch (piece.getPieceType()) {
-                case KING -> output.append(" K ");
-                case QUEEN -> output.append(" Q ");
-                case BISHOP -> output.append(" B ");
-                case KNIGHT -> output.append(" N ");
-                case ROOK -> output.append(" R ");
-                case PAWN -> output.append(" P ");
+                case KING -> pieceSymbol = WHITE_KING;
+                case QUEEN -> pieceSymbol = WHITE_QUEEN;
+                case BISHOP -> pieceSymbol = WHITE_BISHOP;
+                case KNIGHT -> pieceSymbol = WHITE_KNIGHT;
+                case ROOK -> pieceSymbol = WHITE_ROOK;
+                case PAWN -> pieceSymbol = WHITE_PAWN;
+                default -> pieceSymbol = " ";
             }
         } else {
-            output.append("   ");
+            switch (piece.getPieceType()) {
+                case KING -> pieceSymbol = BLACK_KING;
+                case QUEEN -> pieceSymbol = BLACK_QUEEN;
+                case BISHOP -> pieceSymbol = BLACK_BISHOP;
+                case KNIGHT -> pieceSymbol = BLACK_KNIGHT;
+                case ROOK -> pieceSymbol = BLACK_ROOK;
+                case PAWN -> pieceSymbol = BLACK_PAWN;
+                default -> pieceSymbol = " ";
+            }
         }
-
-        return output.toString();
+        System.out.print(pieceSymbol);
     }
 }
