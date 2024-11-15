@@ -2,15 +2,12 @@ package ui;
 
 import model.GameData;
 import com.google.gson.Gson;
-import java.util.HashSet;
 
-import java.io.IOException;
 import java.util.*;
 
 public class ServerFacade {
 
     private HttpCommunicator http;
-    private String serverDomain;
     private String authToken;
 
     public ServerFacade() throws Exception {
@@ -18,7 +15,6 @@ public class ServerFacade {
     }
 
     public ServerFacade(String serverDomain) throws Exception {
-        this.serverDomain = serverDomain;
         http = new HttpCommunicator(this, serverDomain);
     }
 
