@@ -1,7 +1,6 @@
 package ui;
 
 import model.GameData;
-import com.google.gson.Gson;
 
 import java.util.*;
 
@@ -61,5 +60,6 @@ public class ServerFacade {
     public boolean observeGame(int gameId) {
         return http.observeGame(gameId);
     }
+
 
 }
