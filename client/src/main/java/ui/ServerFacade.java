@@ -1,4 +1,4 @@
-package client;
+package ui;
 
 import chess.ChessGame;
 import model.GameData;
@@ -8,7 +8,6 @@ import java.util.HashSet;
 public class ServerFacade {
 
     private HttpCommunicator http;
-    private WebsocketCommunicator ws;
     private String serverDomain;
     private String authToken;
 
