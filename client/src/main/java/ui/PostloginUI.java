@@ -54,9 +54,9 @@ public class PostloginUI {
         out.println("list - list games");
         out.println("join <ID> [WHITE|BLACK] - join a game");
         out.println("observe <ID> - observe a game");
-        out.println("logout - when you are done");
-        out.println("quit - playing chess");
-        out.println("help - with possible commands");
+        out.println("logout - to logout");
+        out.println("quit - to exit");
+        out.println("help - to display this menu again");
     }
 
     private void handleLogout() {
@@ -90,7 +90,10 @@ public class PostloginUI {
         }
         int index = 1;
         for (var game : games) {
-            out.printf("%d. %s - Players: %s vs %s\n", index++, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
+            String gameName = game.gameName() != null ? game.gameName() : "Unnamed Game";
+            String whitePlayer = game.whiteUsername() != null ? game.whiteUsername() : "N/A";
+            String blackPlayer = game.blackUsername() != null ? game.blackUsername() : "N/A";
+            out.printf("%d. %s - Players: %s vs %s\n", index++, gameName, whitePlayer, blackPlayer);
         }
     }
 
