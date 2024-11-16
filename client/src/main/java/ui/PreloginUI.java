@@ -28,10 +28,10 @@ public class PreloginUI {
             } else if (input.equalsIgnoreCase("quit")) {
                 return;
 
-            } else if (input.equalsIgnoreCase("login")) {
+            } else if (input.startsWith("login")) {
                 handleLogin(input);
 
-            } else if (input.equalsIgnoreCase("register")) {
+            } else if (input.startsWith("register")) {
                 handleRegister(input);
 
             } else {

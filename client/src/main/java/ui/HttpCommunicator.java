@@ -151,32 +151,32 @@ public class HttpCommunicator {
             return response.toString();
         }
     }
-    public void clear() {
-        Map<String, Object> response = request("DELETE", "/clear");
-    }
-    private Map<String, Object> request(String method, String endpoint) {
-        Map<String, Object> responseMap = null;
-        try {
-            URL url = new URL(baseURL + endpoint);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(method);
-
-            if (facade.getAuthToken() != null) {
-                connection.setRequestProperty("Authorization", facade.getAuthToken());
-            }
-
-            connection.connect();
-
-            InputStream responseStream = connection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST
-                    ? connection.getInputStream()
-                    : connection.getErrorStream();
-            InputStreamReader reader = new InputStreamReader(responseStream);
-            responseMap = new Gson().fromJson(reader, Map.class);
-            reader.close();
-        } catch (Exception e) {
-            responseMap = Map.of("Error", e.getMessage());
-        }
-        return responseMap;
-    }
+//    public void clear() {
+//        Map<String, Object> response = request("DELETE", "/clear");
+//    }
+//    private Map<String, Object> request(String method, String endpoint) {
+//        Map<String, Object> responseMap = null;
+//        try {
+//            URL url = new URL(baseURL + endpoint);
+//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//            connection.setRequestMethod(method);
+//
+//            if (facade.getAuthToken() != null) {
+//                connection.setRequestProperty("Authorization", facade.getAuthToken());
+//            }
+//
+//            connection.connect();
+//
+//            InputStream responseStream = connection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST
+//                    ? connection.getInputStream()
+//                    : connection.getErrorStream();
+//            InputStreamReader reader = new InputStreamReader(responseStream);
+//            responseMap = new Gson().fromJson(reader, Map.class);
+//            reader.close();
+//        } catch (Exception e) {
+//            responseMap = Map.of("Error", e.getMessage());
+//        }
+//        return responseMap;
+//    }
 
 }
