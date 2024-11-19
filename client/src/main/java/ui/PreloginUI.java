@@ -47,6 +47,7 @@ public class PreloginUI {
         out.println("help - with possible commands");
     }
     private void handleLogin(String input){
+        server.clear();
         String[] tokens = input.split(" ");
         if (tokens.length != 3){
             out.println("Invalid login. Please provide a username and password");

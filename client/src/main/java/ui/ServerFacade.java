@@ -60,8 +60,8 @@ public class ServerFacade {
     public boolean observeGame(int gameId) {
         return http.observeGame(gameId);
     }
-//    public void clear() {
-//        http.clear();
-//    }
+    public void clear() {
+        http.clear();
+    }
 
 }
