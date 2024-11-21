@@ -1,6 +1,8 @@
 package ui;
 
-import java.util.Scanner;
+import model.GameData;
+
+import java.util.*;
 
 import static java.lang.System.out;
 
@@ -8,6 +10,7 @@ public class PostloginUI {
 
     private final ServerFacade server;
     private final Scanner scanner = new Scanner(System.in);
+    private HashSet<GameData> gameList;
 
     public PostloginUI(ServerFacade server) {
         this.server = server;
@@ -76,20 +79,20 @@ public class PostloginUI {
         String gameName = tokens[1];
         int gameId = server.createGame(gameName);
         if (gameId != -1) {
-            out.printf("Game '%s' created with ID %d\n", gameName, gameId);
+            out.printf("Game '%s' created!", gameName);
         } else {
             out.println("Failed to create game. Please try again.");
         }
     }
 
     private void handleListGames() {
-        var games = server.listGames();
-        if (games == null || games.isEmpty()) {
+        gameList = server.listGames();
+        if (gameList == null || gameList.isEmpty()) {
             out.println("No games available.");
             return;
         }
         int index = 1;
-        for (var game : games) {
+        for (var game : gameList) {
             String gameName = game.gameName() != null ? game.gameName() : "Unnamed Game";
             String whitePlayer = game.whiteUsername() != null ? game.whiteUsername() : "N/A";
             String blackPlayer = game.blackUsername() != null ? game.blackUsername() : "N/A";
@@ -100,23 +103,30 @@ public class PostloginUI {
     private void handleJoinGame(String input) {
         String[] tokens = input.split(" ");
         if (tokens.length != 3 || (!tokens[2].equalsIgnoreCase("WHITE") && !tokens[2].equalsIgnoreCase("BLACK"))) {
-            out.println("Invalid command. Usage: join <ID> [WHITE|BLACK]");
+            out.println("Invalid command. Usage: join <NUMBER> [WHITE|BLACK]");
             return;
         }
-        int gameId;
+        int gameNumber;
         try {
-            gameId = Integer.parseInt(tokens[1]);
+            gameNumber = Integer.parseInt(tokens[1]);
         } catch (NumberFormatException e) {
-            out.println("Invalid game ID.");
+            out.println("Invalid game number.");
             return;
         }
+        if (gameNumber < 1 || gameList == null || gameNumber > gameList.size()) {
+            out.println("Invalid game number. Use 'list' to view available games.");
+            return;
+        }
+        List<GameData> gameDataList = new ArrayList<>(gameList);
+        GameData selectedGame = gameDataList.get(gameNumber - 1);
         String color = tokens[2].toUpperCase();
-        boolean success = server.joinGame(gameId, color);
+
+        boolean success = server.joinGame(selectedGame.gameID(), color);
         if (success) {
-            out.printf("Joined game %d as %s.\n", gameId, color);
+            out.printf("Joined game '%s' as %s.\n", selectedGame.gameName(), color);
             new GameplayUI().displayBoard();
         } else {
-            out.println("Failed to join game. Please check the game ID or color and try again.");
+            out.println("Failed to join game. Please check the game details and try again.");
         }
     }
 
@@ -126,17 +136,19 @@ public class PostloginUI {
             out.println("Invalid command. Usage: observe <ID>");
             return;
         }
-        int gameId;
+        int gameNumber;
         try {
-            gameId = Integer.parseInt(tokens[1]);
+            gameNumber = Integer.parseInt(tokens[1]);
         } catch (NumberFormatException e) {
-            out.println("Invalid game ID.");
+            out.println("Invalid game number.");
             return;
         }
-        if (true) {
-            out.printf("Observing game %d.\n", gameId);
-        } else {
-            out.println("Failed to observe game. Please check the game ID and try again.");
+        if (gameNumber < 1 || gameList == null || gameNumber > gameList.size()) {
+            out.println("Invalid game number. Use 'list' to view available games.");
+            return;
         }
+        List<GameData> gameDataList = new ArrayList<>(gameList);
+        GameData selectedGame = gameDataList.get(gameNumber - 1);
+        out.printf("Game Name: %s\n", selectedGame.gameName());
     }
 }
