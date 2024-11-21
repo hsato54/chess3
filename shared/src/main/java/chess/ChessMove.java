@@ -12,10 +12,16 @@ public class ChessMove {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessMove chessMove = (ChessMove) o;
-        return Objects.equals(startPos, chessMove.startPos) && Objects.equals(endPos, chessMove.endPos) && promo == chessMove.promo;
+        return Objects.equals(startPos, chessMove.startPos) &&
+                Objects.equals(endPos, chessMove.endPos) &&
+                promo == chessMove.promo;
     }
 
     @Override
@@ -26,7 +32,6 @@ public class ChessMove {
     private ChessPosition startPos;
     private ChessPosition endPos;
     private ChessPiece.PieceType promo;
-
 
     public ChessMove(ChessPosition startPos, ChessPosition endPos,
                      ChessPiece.PieceType promo) {
@@ -39,8 +44,6 @@ public class ChessMove {
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-
-        //throw new RuntimeException("Not implemented");
         return startPos;
     }
 
@@ -48,8 +51,6 @@ public class ChessMove {
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-
-        //throw new RuntimeException("Not implemented");
         return endPos;
     }
 
@@ -60,10 +61,7 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-
-        //throw new RuntimeException("Not implemented");
         return promo;
-
     }
 
     @Override

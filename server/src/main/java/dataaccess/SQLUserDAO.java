@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.UserData;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -80,20 +79,6 @@ public class SQLUserDAO implements UserDAO {
             throw new DataAccessException("Error retrieving user from database.");
         }
     }
-//x
-//    @Override
-//    public void deleteUser(String username){
-//        String sql = "DELETE FROM users WHERE username = ?";
-//
-//        try (Connection conn = Database.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(sql)) {
-//
-//            stmt.setString(1, username);
-//            stmt.executeUpdate();
-//        } catch (SQLException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     @Override
     public void clear() {
