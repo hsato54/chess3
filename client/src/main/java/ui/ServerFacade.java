@@ -57,9 +57,6 @@ public class ServerFacade {
         return http.joinGame(gameId, playerColor);
     }
 
-    public boolean observeGame(int gameId) {
-        return http.observeGame(gameId);
-    }
     public void clear() {
         http.clear();
     }

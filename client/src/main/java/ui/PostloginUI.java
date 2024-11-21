@@ -114,6 +114,7 @@ public class PostloginUI {
         boolean success = server.joinGame(gameId, color);
         if (success) {
             out.printf("Joined game %d as %s.\n", gameId, color);
+            new GameplayUI().displayBoard();
         } else {
             out.println("Failed to join game. Please check the game ID or color and try again.");
         }
@@ -132,8 +133,7 @@ public class PostloginUI {
             out.println("Invalid game ID.");
             return;
         }
-        boolean success = server.observeGame(gameId);
-        if (success) {
+        if (true) {
             out.printf("Observing game %d.\n", gameId);
         } else {
             out.println("Failed to observe game. Please check the game ID and try again.");

@@ -141,20 +141,4 @@ public class ServerFacadeTests {
         boolean joined = facade.joinGame(9999, "WHITE");  // Invalid game ID
         assertFalse(joined, "Joining game should fail with an invalid game ID");
     }
-
-    @Test
-    public void testObserveGameFailWithInvalidID() {
-        facade.register("player6", "password", "p6@email.com");
-        facade.login("player6", "password");
-
-        boolean observing = facade.observeGame(9999);  // Invalid game ID
-        assertFalse(observing, "Observing game should fail with an invalid game ID");
-    }
-
-    @Test
-    public void testObserveGameFailWithoutLogin() {
-        int gameId = 1001;
-        boolean observing = facade.observeGame(gameId);
-        assertFalse(observing, "Observing game should fail if the user is not logged in");
-    }
 }

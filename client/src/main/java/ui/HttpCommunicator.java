@@ -82,11 +82,6 @@ public class HttpCommunicator {
         return !resp.containsKey("Error");
     }
 
-    public boolean observeGame(int gameId) {
-        var body = Map.of("gameID", gameId);
-        Map<String, Object> resp = sendPostRequest("/game/observe", gson.toJson(body));
-        return !resp.containsKey("Error");
-    }
 
     public String getAuthToken() {
         return facade.getAuthToken();
