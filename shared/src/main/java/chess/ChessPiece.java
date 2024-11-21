@@ -2,8 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
-
 
 /**
  * Represents a single chess piece
@@ -13,294 +11,160 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessPiece that = (ChessPiece) o;
-        return pieceColor == that.pieceColor && type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pieceColor, type);
-    }
-
     private ChessGame.TeamColor pieceColor;
-    private ChessPiece.PieceType type;
+    private PieceType type;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
 
-    /**
-     * The various different chess piece options
-     */
     public enum PieceType {
-        KING,
-        QUEEN,
-        BISHOP,
-        KNIGHT,
-        ROOK,
-        PAWN
+        KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN
     }
 
-    /**
-     * @return Which team this chess piece belongs to
-     */
     public ChessGame.TeamColor getTeamColor() {
-
-        //throw new RuntimeException("Not implemented");
         return pieceColor;
     }
 
-    /**
-     * @return which type of chess piece this piece is
-     */
     public PieceType getPieceType() {
-
-        //throw new RuntimeException("Not implemented");
         return type;
     }
 
-    /**
-     * Calculates all the positions a chess piece can move to
-     * Does not take into account moves that are illegal due to leaving the king in
-     * danger
-     *
-     * @return Collection of valid moves
-     */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        //throw new RuntimeException("Not implemented");
         Collection<ChessMove> validMoves = new ArrayList<>();
-
-        if (type == PieceType.PAWN) {
-            pawnMove(board, myPosition, validMoves);
+        switch (type) {
+            case PAWN -> pawnMove(board, myPosition, validMoves);
+            case ROOK -> rookMove(board, myPosition, validMoves);
+            case BISHOP -> bishopMove(board, myPosition, validMoves);
+            case QUEEN -> {
+                bishopMove(board, myPosition, validMoves);
+                rookMove(board, myPosition, validMoves);
+            }
+            case KNIGHT -> knightMove(board, myPosition, validMoves);
+            case KING -> kingMove(board, myPosition, validMoves);
         }
-        if (type == PieceType.ROOK){
-            rookMove(board, myPosition, validMoves);
-        }
-        if (type == PieceType.BISHOP) {
-            bishopMove(board, myPosition, validMoves);
-        }
-        if (type == PieceType.QUEEN){
-            //queenMove(board, myPosition, validMoves);
-            bishopMove(board, myPosition, validMoves);
-            rookMove(board, myPosition, validMoves);
-        }
-        if (type == PieceType.KNIGHT){
-            knightMove(board, myPosition, validMoves);
-        }
-        if (type == PieceType.KING) {
-            kingMove(board, myPosition, validMoves);
-        }
-
         return validMoves;
     }
 
-    private void pawnMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-
-        int direction;
-        if (pieceColor == ChessGame.TeamColor.WHITE){
-            direction = 1;
-        }
-        else {
-            direction = -1;
-        }
-
+    private void pawnMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        int direction = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
 
-        if (moveAble(row + direction, col) && board.getPiece(new ChessPosition(row + direction, col)) == null){
+        addPawnAdvanceMoves(board, validMoves, row, col, direction, myPosition);
+        addPawnCaptureMoves(board, validMoves, row, col, direction, myPosition);
+    }
 
-            if ((row + direction == 8 && pieceColor == ChessGame.TeamColor.WHITE) || (row + direction == 1 && pieceColor == ChessGame.TeamColor.BLACK)) {
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col), ChessPiece.PieceType.QUEEN));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col), ChessPiece.PieceType.ROOK));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col), ChessPiece.PieceType.BISHOP));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col), ChessPiece.PieceType.KNIGHT));
+    private void addPawnAdvanceMoves(ChessBoard board, Collection<ChessMove> validMoves,
+                                     int row, int col, int direction, ChessPosition myPosition) {
+        ChessPosition oneStep = new ChessPosition(row + direction, col);
+        if (moveAble(oneStep) && board.getPiece(oneStep) == null) {
+            if (isPromotionRow(row + direction)) {
+                addPromotionMoves(validMoves, myPosition, oneStep);
+            } else {
+                validMoves.add(new ChessMove(myPosition, oneStep, null));
             }
-            else{
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col), null));
+            ChessPosition twoStep = new ChessPosition(row + 2 * direction, col);
+            if (isStartingPawnRow(row) && board.getPiece(twoStep) == null) {
+                validMoves.add(new ChessMove(myPosition, twoStep, null));
             }
+        }
+    }
 
-            if ((row == 2 && pieceColor == ChessGame.TeamColor.WHITE) || (row == 7 && pieceColor == ChessGame.TeamColor.BLACK)){
-                if (board.getPiece(new ChessPosition(row + 2 * direction, col)) == null) {
-                    validMoves.add(new ChessMove(myPosition, new ChessPosition(row + 2 * direction, col), null));
+    private void addPawnCaptureMoves(ChessBoard board, Collection<ChessMove> validMoves,
+                                     int row, int col, int direction, ChessPosition myPosition) {
+        int[][] captureOffsets = {{direction, -1}, {direction, 1}};
+        for (int[] offset : captureOffsets) {
+            ChessPosition capturePos = new ChessPosition(row + offset[0], col + offset[1]);
+            if (moveAble(capturePos) && isOpponentPiece(board.getPiece(capturePos))) {
+                if (isPromotionRow(row + direction)) {
+                    addPromotionMoves(validMoves, myPosition, capturePos);
+                } else {
+                    validMoves.add(new ChessMove(myPosition, capturePos, null));
                 }
             }
         }
-        if (moveAble(row + direction, col - 1) && theOpp(board.getPiece(new ChessPosition(row + direction, col - 1)))){
-            if ((row + direction == 8 && pieceColor == ChessGame.TeamColor.WHITE) || (row + direction == 1 && pieceColor == ChessGame.TeamColor.BLACK)) {
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col - 1), ChessPiece.PieceType.QUEEN));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col - 1), ChessPiece.PieceType.ROOK));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col - 1), ChessPiece.PieceType.BISHOP));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col - 1), ChessPiece.PieceType.KNIGHT));
-            }
-            else{
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col - 1), null));
-            }
-        }
-        if (moveAble(row + direction, col + 1) && theOpp(board.getPiece(new ChessPosition(row + direction, col + 1)))){
-            if ((row + direction == 8 && pieceColor == ChessGame.TeamColor.WHITE) || (row + direction == 1 && pieceColor == ChessGame.TeamColor.BLACK)) {
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), ChessPiece.PieceType.QUEEN));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), ChessPiece.PieceType.ROOK));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), ChessPiece.PieceType.BISHOP));
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), ChessPiece.PieceType.KNIGHT));
-            }
-            else{
-                validMoves.add(new ChessMove(myPosition, new ChessPosition(row + direction, col + 1), null));
+    }
+
+    private void rookMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        linearMoves(board, myPosition, validMoves, new int[][]{{0, 1}, {0, -1}, {1, 0}, {-1, 0}});
+    }
+
+    private void bishopMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        linearMoves(board, myPosition, validMoves, new int[][]{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}});
+    }
+
+    private void linearMoves(ChessBoard board, ChessPosition start, Collection<ChessMove> moves, int[][] directions) {
+        for (int[] dir : directions) {
+            int row = start.getRow();
+            int col = start.getColumn();
+            while (true) {
+                row += dir[0];
+                col += dir[1];
+                ChessPosition newPos = new ChessPosition(row, col);
+                if (!moveAble(newPos) || !addMoveIfValid(board, start, newPos, moves)) {
+                    break;
+                }
             }
         }
     }
 
-    private void rookMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-
-        for (int c = col - 1; c > 0; c--) {
-            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col + 1; c <= 8; c++) {
-            if (!QBRmoves(board, myPosition, row, c, validMoves)){
-                break;
-            }
-        }
-        for (int r = row - 1; r > 0; r--) {
-            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-                break;
-            }
-        }
-        for (int r = row + 1; r <= 8; r++) {
-            if (!QBRmoves(board, myPosition, r, col, validMoves)) {
-                break;
-            }
-        }
-
-    }
-
-    private void bishopMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        for (int c = col - 1, r = row - 1; c > 0 && r > 0; c--, r--) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col + 1, r = row - 1; c <= 8 && r > 0; c++, r--) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)){
-                break;
-            }
-        }
-        for (int c = col - 1, r = row + 1; c > 0 && r <= 8; c--, r++) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-                break;
-            }
-        }
-        for (int c = col + 1, r = row + 1; c <= 8 && r <= 8; c++, r++) {
-            if (!QBRmoves(board, myPosition, r, c, validMoves)) {
-                break;
-            }
-        }
-
-
-    }
-
-    private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-
-        int[][] possibleMoves = {
+    private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        int[][] offsets = {
                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
                 {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
         };
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        for (int[] possibleMove : possibleMoves) {
-            int endRow = row + possibleMove[0];
-            int endCol = col + possibleMove[1];
-            if (moveAble(endRow, endCol)){
-                ChessPosition newPos = new ChessPosition(endRow, endCol);
-                ChessPiece pieceAtNewPos = board.getPiece(newPos);
-
-                if (pieceAtNewPos == null || theOpp(pieceAtNewPos)){
-                    validMoves.add(new ChessMove(myPosition, newPos, null));
-                }
-
-            }
+        for (int[] offset : offsets) {
+            ChessPosition newPos = new ChessPosition(myPosition.getRow() + offset[0], myPosition.getColumn() + offset[1]);
+            addMoveIfValid(board, myPosition, newPos, validMoves);
         }
     }
 
-    private void kingMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves){
-        int[][] possibleMoves = {
-                {1, -1}, {1, 0}, {1, 1},
-                {0, -1},         {0, 1},
-                {-1, -1}, {-1, 0}, {-1, 1}
+    private void kingMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        int[][] offsets = {
+                {1, 0}, {0, 1}, {-1, 0}, {0, -1},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
         };
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        for (int[] possibleMove : possibleMoves) {
-            int endRow = row + possibleMove[0];
-            int endCol = col + possibleMove[1];
-            if (moveAble(endRow, endCol)){
-                ChessPosition newPos = new ChessPosition(endRow, endCol);
-                ChessPiece pieceAtNewPos = board.getPiece(newPos);
-
-                if (pieceAtNewPos == null || theOpp(pieceAtNewPos)){
-                    validMoves.add(new ChessMove(myPosition, newPos, null));
-                }
-
-            }
+        for (int[] offset : offsets) {
+            ChessPosition newPos = new ChessPosition(myPosition.getRow() + offset[0], myPosition.getColumn() + offset[1]);
+            addMoveIfValid(board, myPosition, newPos, validMoves);
         }
     }
 
-
-
-
-
-    private boolean moveAble(int row, int col) {
+    private boolean moveAble(ChessPosition position) {
+        int row = position.getRow();
+        int col = position.getColumn();
         return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
-    private boolean theOpp(ChessPiece piece) {
+
+    private boolean isOpponentPiece(ChessPiece piece) {
         return piece != null && piece.getTeamColor() != this.pieceColor;
     }
-    private boolean friendlyBlock(ChessPiece piece) {
-        return piece != null && piece.getTeamColor() == this.pieceColor;
+
+    private boolean isPromotionRow(int row) {
+        return (row == 8 && pieceColor == ChessGame.TeamColor.WHITE) || (row == 1 && pieceColor == ChessGame.TeamColor.BLACK);
     }
 
-    //QBRmoves is how the queen, bishop, and rook acts. if there is
-    //an opposing piece, then it takes and cant go further. if there
-    //is a team piece, it gets blocked.
-    private boolean QBRmoves(ChessBoard board, ChessPosition startPos,
-                             int endRow, int endCol, Collection<ChessMove> moves){
+    private boolean isStartingPawnRow(int row) {
+        return (row == 2 && pieceColor == ChessGame.TeamColor.WHITE) || (row == 7 && pieceColor == ChessGame.TeamColor.BLACK);
+    }
 
-        if(!moveAble(endRow, endCol)){
-            return false;
-        }
-
-        ChessPosition endPos = new ChessPosition(endRow, endCol);
-        ChessPiece endPiece = board.getPiece(endPos);
-
-        if (endPiece == null){
-            moves.add(new ChessMove(startPos, endPos, null));
+    private boolean addMoveIfValid(ChessBoard board, ChessPosition start, ChessPosition end, Collection<ChessMove> moves) {
+        ChessPiece piece = board.getPiece(end);
+        if (piece == null) {
+            moves.add(new ChessMove(start, end, null));
             return true;
+        } else if (isOpponentPiece(piece)) {
+            moves.add(new ChessMove(start, end, null));
         }
-        else if (friendlyBlock(endPiece)){
-            return false;
-        }
-        else if (theOpp(endPiece)){
-            moves.add(new ChessMove(startPos, endPos, null));
-            return false;
-        }
-        return true;
+        return false;
+    }
 
+    private void addPromotionMoves(Collection<ChessMove> moves, ChessPosition start, ChessPosition end) {
+        moves.add(new ChessMove(start, end, PieceType.QUEEN));
+        moves.add(new ChessMove(start, end, PieceType.ROOK));
+        moves.add(new ChessMove(start, end, PieceType.BISHOP));
+        moves.add(new ChessMove(start, end, PieceType.KNIGHT));
     }
 }

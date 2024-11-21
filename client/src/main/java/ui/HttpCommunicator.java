@@ -27,7 +27,9 @@ public class HttpCommunicator {
     public boolean register(String username, String password, String email) {
         var body = Map.of("username", username, "password", password, "email", email);
         Map<String, Object> resp = sendPostRequest("/user", gson.toJson(body));
-        if (resp.containsKey("Error")) return false;
+        if (resp.containsKey("Error")) {
+            return false;
+        }
 
         facade.setAuthToken((String) resp.get("authToken"));
         return true;
@@ -36,7 +38,9 @@ public class HttpCommunicator {
     public boolean login(String username, String password) {
         var body = Map.of("username", username, "password", password);
         Map<String, Object> resp = sendPostRequest("/session", gson.toJson(body));
-        if (resp.containsKey("Error")) return false;
+        if (resp.containsKey("Error")) {
+            return false;
+        }
 
         facade.setAuthToken((String) resp.get("authToken"));
         return true;
@@ -44,7 +48,9 @@ public class HttpCommunicator {
 
     public boolean logout() {
         Map<String, Object> resp = sendDeleteRequest("/session");
-        if (resp.containsKey("Error")) return false;
+        if (resp.containsKey("Error")) {
+            return false;
+        }
 
         facade.setAuthToken(null);
         return true;
@@ -53,14 +59,18 @@ public class HttpCommunicator {
     public int createGame(String gameName) {
         var body = Map.of("gameName", gameName);
         Map<String, Object> resp = sendPostRequest("/game", gson.toJson(body));
-        if (resp.containsKey("Error")) return -1;
+        if (resp.containsKey("Error")) {
+            return -1;
+        }
 
         return ((Double) resp.get("gameID")).intValue();
     }
 
     public HashSet<GameData> listGames() {
         String resp = sendGetRequest("/game");
-        if (resp.contains("Error")) return new HashSet<>();
+        if (resp.contains("Error")) {
+            return new HashSet<>();
+        }
 
         ListGames gamesList = gson.fromJson(resp, ListGames.class);
         return new HashSet<>(gamesList.games());
@@ -118,7 +128,8 @@ public class HttpCommunicator {
         }
     }
 
-    private HttpURLConnection createConnection(String method, String endpoint, String body) throws IOException, URISyntaxException {
+    private HttpURLConnection createConnection(String method, String endpoint, String body)
+            throws IOException, URISyntaxException {
         URI uri = new URI(baseURL + endpoint);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod(method);
@@ -151,9 +162,11 @@ public class HttpCommunicator {
             return response.toString();
         }
     }
+
     public void clear() {
         Map<String, Object> response = request("DELETE", "/db");
     }
+
     private Map<String, Object> request(String method, String endpoint) {
         Map<String, Object> responseMap = null;
         try {
@@ -170,13 +183,12 @@ public class HttpCommunicator {
             InputStream responseStream = connection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST
                     ? connection.getInputStream()
                     : connection.getErrorStream();
-            InputStreamReader reader = new InputStreamReader(responseStream);
-            responseMap = new Gson().fromJson(reader, Map.class);
-            reader.close();
+            try (InputStreamReader reader = new InputStreamReader(responseStream)) {
+                responseMap = gson.fromJson(reader, Map.class);
+            }
         } catch (Exception e) {
             responseMap = Map.of("Error", e.getMessage());
         }
         return responseMap;
     }
-
 }
