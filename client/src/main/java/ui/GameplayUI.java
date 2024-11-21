@@ -42,7 +42,7 @@ public class GameplayUI {
                 if (piece != null) {
                     printPiece(piece);
                 } else {
-                    System.out.print("   ");
+                    System.out.print(EMPTY);
                 }
 
                 System.out.print(RESET_BG_COLOR);

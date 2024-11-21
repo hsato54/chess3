@@ -55,8 +55,8 @@ public class PostloginUI {
     private void displayHelp() {
         out.println("create <NAME> - create a game");
         out.println("list - list games");
-        out.println("join <ID> [WHITE|BLACK] - join a game");
-        out.println("observe <ID> - observe a game");
+        out.println("join <game number> [WHITE|BLACK] - join a game");
+        out.println("observe <game number > - observe a game");
         out.println("logout - to logout");
         out.println("quit - to exit");
         out.println("help - to display this menu again");
@@ -79,7 +79,7 @@ public class PostloginUI {
         String gameName = tokens[1];
         int gameId = server.createGame(gameName);
         if (gameId != -1) {
-            out.printf("Game '%s' created!", gameName);
+            out.printf("Game '%s' created! \n", gameName);
         } else {
             out.println("Failed to create game. Please try again.");
         }
@@ -106,19 +106,8 @@ public class PostloginUI {
             out.println("Invalid command. Usage: join <NUMBER> [WHITE|BLACK]");
             return;
         }
-        int gameNumber;
-        try {
-            gameNumber = Integer.parseInt(tokens[1]);
-        } catch (NumberFormatException e) {
-            out.println("Invalid game number.");
-            return;
-        }
-        if (gameNumber < 1 || gameList == null || gameNumber > gameList.size()) {
-            out.println("Invalid game number. Use 'list' to view available games.");
-            return;
-        }
-        List<GameData> gameDataList = new ArrayList<>(gameList);
-        GameData selectedGame = gameDataList.get(gameNumber - 1);
+        GameData selectedGame = getGameData(tokens);
+        if (selectedGame == null) return;
         String color = tokens[2].toUpperCase();
 
         boolean success = server.joinGame(selectedGame.gameID(), color);
@@ -130,25 +119,31 @@ public class PostloginUI {
         }
     }
 
+    private GameData getGameData(String[] tokens) {
+        int gameNumber;
+        try {
+            gameNumber = Integer.parseInt(tokens[1]);
+        } catch (NumberFormatException e) {
+            out.println("Invalid game number.");
+            return null;
+        }
+        if (gameNumber < 1 || gameList == null || gameNumber > gameList.size()) {
+            out.println("Invalid game number. Use 'list' to view available games.");
+            return null;
+        }
+        List<GameData> gameDataList = new ArrayList<>(gameList);
+        GameData selectedGame = gameDataList.get(gameNumber - 1);
+        return selectedGame;
+    }
+
     private void handleObserveGame(String input) {
         String[] tokens = input.split(" ");
         if (tokens.length != 2) {
             out.println("Invalid command. Usage: observe <ID>");
             return;
         }
-        int gameNumber;
-        try {
-            gameNumber = Integer.parseInt(tokens[1]);
-        } catch (NumberFormatException e) {
-            out.println("Invalid game number.");
-            return;
-        }
-        if (gameNumber < 1 || gameList == null || gameNumber > gameList.size()) {
-            out.println("Invalid game number. Use 'list' to view available games.");
-            return;
-        }
-        List<GameData> gameDataList = new ArrayList<>(gameList);
-        GameData selectedGame = gameDataList.get(gameNumber - 1);
+        GameData selectedGame = getGameData(tokens);
+        if (selectedGame == null) return;
         out.printf("Game Name: %s\n", selectedGame.gameName());
     }
 }
