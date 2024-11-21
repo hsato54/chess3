@@ -146,14 +146,9 @@ public class ChessPiece {
         moveLinear(board, myPosition, validMoves, -1, -1);
     }
 
-    private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
-        int[][] possibleMoves = {
-                {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
-                {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
-        };
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
+    private void potentialMoves(ChessBoard board, ChessPosition startPos, Collection<ChessMove> validMoves, int[][] possibleMoves) {
+        int row = startPos.getRow();
+        int col = startPos.getColumn();
 
         for (int[] move : possibleMoves) {
             int endRow = row + move[0];
@@ -162,10 +157,18 @@ public class ChessPiece {
                 ChessPosition newPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceAtNewPos = board.getPiece(newPos);
                 if (pieceAtNewPos == null || theOpp(pieceAtNewPos)) {
-                    validMoves.add(new ChessMove(myPosition, newPos, null));
+                    validMoves.add(new ChessMove(startPos, newPos, null));
                 }
             }
         }
+    }
+
+    private void knightMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
+        int[][] possibleMoves = {
+                {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+                {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+        };
+        potentialMoves(board, myPosition, validMoves, possibleMoves);
     }
 
     private void kingMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> validMoves) {
@@ -174,21 +177,7 @@ public class ChessPiece {
                 {0, -1}, {0, 1},
                 {-1, -1}, {-1, 0}, {-1, 1}
         };
-
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
-
-        for (int[] move : possibleMoves) {
-            int endRow = row + move[0];
-            int endCol = col + move[1];
-            if (moveAble(endRow, endCol)) {
-                ChessPosition newPos = new ChessPosition(endRow, endCol);
-                ChessPiece pieceAtNewPos = board.getPiece(newPos);
-                if (pieceAtNewPos == null || theOpp(pieceAtNewPos)) {
-                    validMoves.add(new ChessMove(myPosition, newPos, null));
-                }
-            }
-        }
+        potentialMoves(board, myPosition, validMoves, possibleMoves);
     }
 
     private void moveLinear(ChessBoard board, ChessPosition startPos, Collection<ChessMove> moves, int rowStep, int colStep) {
