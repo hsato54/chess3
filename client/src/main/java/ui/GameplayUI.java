@@ -42,7 +42,7 @@ public class GameplayUI {
                 if (piece != null) {
                     printPiece(piece);
                 } else {
-                    System.out.print(EMPTY);
+                    System.out.print("   ");
                 }
 
                 System.out.print(RESET_BG_COLOR);
@@ -66,22 +66,22 @@ public class GameplayUI {
 
         if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
             switch (piece.getPieceType()) {
-                case KING -> pieceSymbol = WHITE_KING;
-                case QUEEN -> pieceSymbol = WHITE_QUEEN;
-                case BISHOP -> pieceSymbol = WHITE_BISHOP;
-                case KNIGHT -> pieceSymbol = WHITE_KNIGHT;
-                case ROOK -> pieceSymbol = WHITE_ROOK;
-                case PAWN -> pieceSymbol = WHITE_PAWN;
+                case KING -> pieceSymbol = " K ";
+                case QUEEN -> pieceSymbol = " Q ";
+                case BISHOP -> pieceSymbol = " B ";
+                case KNIGHT -> pieceSymbol = " N ";
+                case ROOK -> pieceSymbol = " R ";
+                case PAWN -> pieceSymbol = " P ";
                 default -> pieceSymbol = " ";
             }
         } else {
             switch (piece.getPieceType()) {
-                case KING -> pieceSymbol = BLACK_KING;
-                case QUEEN -> pieceSymbol = BLACK_QUEEN;
-                case BISHOP -> pieceSymbol = BLACK_BISHOP;
-                case KNIGHT -> pieceSymbol = BLACK_KNIGHT;
-                case ROOK -> pieceSymbol = BLACK_ROOK;
-                case PAWN -> pieceSymbol = BLACK_PAWN;
+                case KING -> pieceSymbol = " k ";
+                case QUEEN -> pieceSymbol = " q ";
+                case BISHOP -> pieceSymbol = " b ";
+                case KNIGHT -> pieceSymbol = " n ";
+                case ROOK -> pieceSymbol = " r ";
+                case PAWN -> pieceSymbol = " p ";
                 default -> pieceSymbol = " ";
             }
         }
