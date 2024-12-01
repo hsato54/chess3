@@ -5,11 +5,11 @@ import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.*;
+import websocket.messages.Error;
+import websocket.messages.LoadGame;
+import websocket.messages.Notification;
+import websocket.messages.ServerMessage;
+import websocket.commands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -36,11 +36,11 @@ public class WebsocketHandler {
     public void onMessage(Session session, String message) {
         try {
             if (message.contains("\"commandType\":\"JOIN_PLAYER\"")) {
-                JoinPlayer command = gson.fromJson(message, JoinPlayer.class);
+                Connect command = gson.fromJson(message, Connect.class);
                 gameSessions.replace(session, command.getGameID());
                 handleJoinPlayer(session, command);
             } else if (message.contains("\"commandType\":\"JOIN_OBSERVER\"")) {
-                JoinObserver command = gson.fromJson(message, JoinObserver.class);
+                Observe command = gson.fromJson(message, Observe.class);
                 gameSessions.replace(session, command.getGameID());
                 handleJoinObserver(session, command);
             } else if (message.contains("\"commandType\":\"MAKE_MOVE\"")) {
