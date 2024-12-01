@@ -11,13 +11,17 @@ public class GameplayUI {
 
     private final ChessBoard chessBoard;
     private final Scanner scanner;
+    private final ServerFacade server;
+    private final int gameID;
     private boolean isWhiteAtBottom;
 
     public GameplayUI() {
         this.chessBoard = new ChessBoard();
         this.chessBoard.resetBoard();
         this.scanner = new Scanner(System.in);
-        this.isWhiteAtBottom = true;
+        this.server = server;
+        this.gameID = gameID;
+        this.isWhiteAtBottom = isPlayerWhite;
     }
 
     public void run() {
@@ -89,7 +93,8 @@ public class GameplayUI {
             ChessPosition from = ChessPosition.fromAlgebraic(positions[0]);
             ChessPosition to = ChessPosition.fromAlgebraic(positions[1]);
 
-            if (chessBoard.movePiece(from, to)) {
+            boolean success = server.makeMove(gameID, from, to);
+            if (success) {
                 System.out.println("Move executed.");
                 redrawBoard();
             } else {
