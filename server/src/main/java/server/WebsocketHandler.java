@@ -60,7 +60,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void handleJoinPlayer(Session session, JoinPlayer command) throws IOException {
+    private void handleJoinPlayer(Session session, Connect command) throws IOException {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthString());
             GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());
@@ -83,7 +83,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void handleJoinObserver(Session session, JoinObserver command) throws IOException {
+    private void handleJoinObserver(Session session, Observe command) throws IOException {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthString());
             GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());

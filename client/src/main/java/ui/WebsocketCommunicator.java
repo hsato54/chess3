@@ -2,9 +2,9 @@ package ui;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
+import websocket.messages.Error;
+import websocket.messages.LoadGame;
+import websocket.messages.Notification;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -75,8 +75,8 @@ public class WebsocketCommunicator extends Endpoint {
 
     private void printLoadedGame(ChessGame game) {
         System.out.print(ERASE_LINE + "\r\n");
-        GameplayREPL.boardPrinter.updateGame(game);
-        GameplayREPL.boardPrinter.printBoard(GameplayREPL.color, null);
+        GameplayUI.updateGame(game);
+        GameplayUI.printBoard(game.getCurrentTurn().equals(ChessGame.TeamColor.WHITE) ? "WHITE" : "BLACK", null);
         System.out.print("[IN-GAME] >>> ");
     }
 
