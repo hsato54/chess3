@@ -113,7 +113,8 @@ public class PostloginUI {
         boolean success = server.joinGame(selectedGame.gameID(), color);
         if (success) {
             out.printf("Joined game '%s' as %s.\n", selectedGame.gameName(), color);
-            new GameplayUI().displayBoard();
+            boolean isPlayerWhite = color.equalsIgnoreCase("WHITE");
+            new GameplayUI(server, selectedGame.gameID(), isPlayerWhite).displayBoard();
         } else {
             out.println("Failed to join game. Please check the game details and try again.");
         }

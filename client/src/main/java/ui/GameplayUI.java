@@ -15,7 +15,7 @@ public class GameplayUI {
     private final int gameID;
     private boolean isWhiteAtBottom;
 
-    public GameplayUI() {
+    public GameplayUI(ServerFacade server, int gameID, boolean isPlayerWhite) {
         this.chessBoard = new ChessBoard();
         this.chessBoard.resetBoard();
         this.scanner = new Scanner(System.in);
@@ -92,14 +92,10 @@ public class GameplayUI {
 
             ChessPosition from = ChessPosition.fromAlgebraic(positions[0]);
             ChessPosition to = ChessPosition.fromAlgebraic(positions[1]);
+            ChessMove move = new ChessMove(from, to, );
 
-            boolean success = server.makeMove(gameID, from, to);
-            if (success) {
-                System.out.println("Move executed.");
-                redrawBoard();
-            } else {
-                System.out.println("Invalid move. Try again.");
-            }
+            server.makeMove(gameID, move);
+            System.out.println("Move sent to server.");
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid position format. Use algebraic notation (e.g., 'e2 e4').");
         }
