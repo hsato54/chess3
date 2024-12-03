@@ -2,6 +2,7 @@ package ui;
 
 import chess.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -113,19 +114,19 @@ public class GameplayUI {
                 return;
             }
 
-            List<ChessPosition> legalMoves = piece.getLegalMoves(chessBoard, position);
-            if (legalMoves.isEmpty()) {
+            Collection<ChessMove> validMoves = server.getGame(gameID).validMoves(position);
+            if (validMoves.isEmpty()) {
                 System.out.println("No legal moves available for this piece.");
                 return;
             }
 
             System.out.println("Highlighting legal moves...");
-            redrawBoardWithHighlights(legalMoves);
+            redrawBoardWithHighlights(validMoves);
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid position format. Use algebraic notation (e.g., 'e2').");
         }
     }
-    private void redrawBoardWithHighlights(List<ChessPosition> highlights) {
+    private void redrawBoardWithHighlights(Collection<ChessMove> highlights) {
         for (int row = (isWhiteAtBottom ? 7 : 0); (isWhiteAtBottom ? row >= 0 : row < 8); row += (isWhiteAtBottom ? -1 : 1)) {
             int displayedRowNumber = row + 1;
             System.out.print(displayedRowNumber + " ");

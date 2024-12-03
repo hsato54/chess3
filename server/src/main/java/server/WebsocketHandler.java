@@ -62,8 +62,8 @@ public class WebsocketHandler {
 
     private void handleJoinPlayer(Session session, Connect command) throws IOException {
         try {
-            AuthData auth = Server.userService.getAuth(command.getAuthString());
-            GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());
+            AuthData auth = service.UserService.getAuth(command.getAuthString());
+            GameData game = service.GameService.getGameData(command.getAuthString(), command.getGameID());
             ChessGame.TeamColor joiningColor = command.getColor().toString().equalsIgnoreCase("white")
                     ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
