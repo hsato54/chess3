@@ -73,10 +73,10 @@ public class WebsocketCommunicator extends Endpoint {
         System.out.printf("\n%s\n[IN-GAME] >>> ", message);
     }
 
-    private void printLoadedGame(ChessGame game) {
+    private void printLoadedGame(ChessGame game, GameplayUI gameplayUI) {
         System.out.print(ERASE_LINE + "\r\n");
-        GameplayUI.updateGame(game);
-        GameplayUI.printBoard(game.getCurrentTurn().equals(ChessGame.TeamColor.WHITE) ? "WHITE" : "BLACK", null);
+        gameplayUI.updateGame(game);
+        gameplayUI.displayBoard();
         System.out.print("[IN-GAME] >>> ");
     }
 

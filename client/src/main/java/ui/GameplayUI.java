@@ -11,6 +11,7 @@ import static ui.EscapeSequences.*;
 public class GameplayUI {
 
     private final ChessBoard chessBoard;
+    private final ChessGame chessGame;
     private final Scanner scanner;
     private final ServerFacade server;
     private final int gameID;
@@ -19,6 +20,7 @@ public class GameplayUI {
     public GameplayUI(ServerFacade server, int gameID, boolean isPlayerWhite) {
         this.chessBoard = new ChessBoard();
         this.chessBoard.resetBoard();
+        this.chessGame = new ChessGame();
         this.scanner = new Scanner(System.in);
         this.server = server;
         this.gameID = gameID;
@@ -250,5 +252,9 @@ public class GameplayUI {
             }
         }
         System.out.print(pieceSymbol);
+    }
+    public void updateGame(ChessGame game) {
+        this.chessGame.setBoard(game.getBoard());
+        this.isWhiteAtBottom = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
     }
 }
