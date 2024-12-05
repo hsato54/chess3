@@ -21,6 +21,7 @@ public class ServerFacade {
 
     public ServerFacade(String serverDomain) throws Exception {
         http = new HttpCommunicator(this, serverDomain);
+        this.server = serverDomain;
     }
 
     public String getAuthToken() {
@@ -68,7 +69,7 @@ public class ServerFacade {
     }
     private void connectWS() {
         try {
-            ws = new WebsocketCommunicator(server);
+            ws = new WebsocketCommunicator(server, this);
         } catch (Exception e) {
             System.out.println("Failed to establish WebSocket connection");
         }
@@ -95,6 +96,11 @@ public class ServerFacade {
 
     public void resign(int gameID) {
         sendCommand(new Resign(authToken, gameID));
+    }
+
+    public ChessGame getGame(int gameID) {
+        GameData gameData = http.getGameByID(gameID); // Example backend call
+        return gameData != null ? gameData.getGame() : null;
     }
 }
 

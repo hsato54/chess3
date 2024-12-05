@@ -115,7 +115,21 @@ public class GameService {
 
 
     private void updateGameWithPlayers(GameData gameData, int gameID) throws BadRequestException, DataAccessException {
-        gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
+        gameDAO.updateGame(String.valueOf(gameID), new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
+    }
+
+    public GameData getGameData(String authToken, int gameID) throws UnauthorizedException, BadRequestException, DataAccessException {
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            throw new UnauthorizedException();
+        }
+
+        GameData gameData = gameDAO.getGame(gameID);
+        if (gameData == null) {
+            throw new BadRequestException("Game not found");
+        }
+
+        return gameData;
     }
 
 

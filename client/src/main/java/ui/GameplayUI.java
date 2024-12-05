@@ -11,7 +11,7 @@ import static ui.EscapeSequences.*;
 public class GameplayUI {
 
     private final ChessBoard chessBoard;
-    private final ChessGame chessGame;
+    private ChessGame chessGame;
     private final Scanner scanner;
     private final ServerFacade server;
     private final int gameID;
@@ -63,7 +63,6 @@ public class GameplayUI {
         System.out.println("resign - Resign the game");
         System.out.println("highlight - Highlight legal moves for a piece");
     }
-
     private void redrawBoard() {
         System.out.println("Redrawing the board...");
         displayBoardOrientation(isWhiteAtBottom);
@@ -87,15 +86,28 @@ public class GameplayUI {
         String moveInput = scanner.nextLine().trim();
 
         try {
-            String[] positions = moveInput.split(" ");
-            if (positions.length != 2) {
+            String[] parts = moveInput.split(" ");
+            if (parts.length < 2 || parts.length > 3) {
                 System.out.println("Invalid move format. Use 'move e2 e4'.");
                 return;
             }
 
-            ChessPosition from = ChessPosition.fromAlgebraic(positions[0]);
-            ChessPosition to = ChessPosition.fromAlgebraic(positions[1]);
-            ChessMove move = new ChessMove(from, to, );
+            ChessPosition from = ChessPosition.fromAlgebraic(parts[0]);
+            ChessPosition to = ChessPosition.fromAlgebraic(parts[1]);
+
+            ChessPiece.PieceType promo = null;
+
+            if (parts.length == 3) {
+                promo = switch (parts[2].toLowerCase()) {
+                    case "q" -> ChessPiece.PieceType.QUEEN;
+                    case "r" -> ChessPiece.PieceType.ROOK;
+                    case "b" -> ChessPiece.PieceType.BISHOP;
+                    case "n" -> ChessPiece.PieceType.KNIGHT;
+                    default -> throw new IllegalArgumentException("Invalid promotion piece. Use 'q', 'r', 'b', or 'n'.");
+                };
+            }
+
+            ChessMove move = new ChessMove(from, to, promo);
 
             server.makeMove(gameID, move);
             System.out.println("Move sent to server.");

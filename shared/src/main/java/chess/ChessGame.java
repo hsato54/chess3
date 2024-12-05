@@ -15,13 +15,19 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor currentTeamTurn;
+    private boolean gameOver = false;
+    public boolean getGameOver() {
+        return gameOver;
+    }
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
 
     public ChessGame() {
         this.board = new ChessBoard();
         board.resetBoard();
         this.currentTeamTurn = TeamColor.WHITE;
     }
-
     /**
      * @return Which team's turn it is
      */
@@ -43,7 +49,10 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK;
+        public TeamColor opponent() {
+            return this == WHITE ? BLACK : WHITE;
+        }
     }
 
     /**

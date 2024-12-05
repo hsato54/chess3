@@ -17,8 +17,10 @@ public class WebsocketCommunicator extends Endpoint {
 
     private Session session;
     private final Gson gson;
+    private final ServerFacade server;
 
-    public WebsocketCommunicator(String serverDomain) throws Exception {
+    public WebsocketCommunicator(String serverDomain,ServerFacade serverFacade) throws Exception {
+        this.server = serverFacade;
         gson = new Gson();
         initializeConnection(serverDomain);
     }
@@ -65,7 +67,10 @@ public class WebsocketCommunicator extends Endpoint {
 
     private void handleLoadGame(String message) {
         LoadGame loadGame = gson.fromJson(message, LoadGame.class);
-        printLoadedGame(loadGame.getGame());
+        int gameID = loadGame.getGameID();
+        ChessGame game = loadGame.getGame();
+        GameplayUI gameplayUI = new GameplayUI(server, loadGame.getGameID(), game.getTeamTurn() == ChessGame.TeamColor.WHITE);
+        printLoadedGame(game, gameplayUI);
     }
 
     private void printNotification(String message) {

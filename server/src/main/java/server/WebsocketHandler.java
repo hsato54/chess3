@@ -5,15 +5,14 @@ import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
-import websocket.messages.Error;
-import websocket.messages.LoadGame;
-import websocket.messages.Notification;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 import websocket.commands.*;
+import websocket.messages.Error;
 
-import javax.websocket.*;
+import javax.websocket.Session;
+
+
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,8 +61,8 @@ public class WebsocketHandler {
 
     private void handleJoinPlayer(Session session, Connect command) throws IOException {
         try {
-            AuthData auth = service.UserService.getAuth(command.getAuthString());
-            GameData game = service.GameService.getGameData(command.getAuthString(), command.getGameID());
+            AuthData auth = Server.userService.getAuth(command.getAuthToken());
+            GameData game = Server.gameService.getGame(command.getGameID());
             ChessGame.TeamColor joiningColor = command.getColor().toString().equalsIgnoreCase("white")
                     ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
@@ -85,8 +84,8 @@ public class WebsocketHandler {
 
     private void handleJoinObserver(Session session, Observe command) throws IOException {
         try {
-            AuthData auth = Server.userService.getAuth(command.getAuthString());
-            GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());
+            AuthData auth = Server.userService.getAuth(command.getAuthToken());
+            GameData game = Server.gameService.getGame(command.getGameID());
 
             sendNotification(session, "%s has joined the game as an observer".formatted(auth.username()));
             sendGameState(session, game);
@@ -97,8 +96,8 @@ public class WebsocketHandler {
 
     private void handleMakeMove(Session session, MakeMove command) throws IOException {
         try {
-            AuthData auth = Server.userService.getAuth(command.getAuthString());
-            GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());
+            AuthData auth = Server.userService.getAuth(command.getAuthToken());
+            GameData game = Server.gameService.getGame(command.getGameID());
             ChessGame.TeamColor userColor = getTeamColor(auth.username(), game);
 
             if (userColor == null) {
@@ -138,7 +137,7 @@ public class WebsocketHandler {
 
     private void handleLeave(Session session, Leave command) throws IOException {
         try {
-            AuthData auth = Server.userService.getAuth(command.getAuthString());
+            AuthData auth = Server.userService.getAuth(command.getAuthToken());
             sendNotification(session, "%s has left the game.".formatted(auth.username()));
             session.close();
         } catch (Exception e) {
@@ -148,8 +147,8 @@ public class WebsocketHandler {
 
     private void handleResign(Session session, Resign command) throws IOException {
         try {
-            AuthData auth = Server.userService.getAuth(command.getAuthString());
-            GameData game = Server.gameService.getGameData(command.getAuthString(), command.getGameID());
+            AuthData auth = Server.userService.getAuth(command.getAuthToken());
+            GameData game = Server.gameService.getGame(command.getGameID());
             game.game().setGameOver(true);
 
             ChessGame.TeamColor userColor = getTeamColor(auth.username(), game);
@@ -171,15 +170,34 @@ public class WebsocketHandler {
     }
 
     private void sendGameState(Session session, GameData game) throws IOException {
-        sendMessage(session, new LoadGame(game.game()));
+        if (session == null || !session.isOpen()) {
+            System.err.println("Session is closed or null, cannot send game state.");
+            return;
+        }
+
+        ChessGame chessGame = game.game();
+        int gameID = game.gameID();
+        LoadGame loadGameMessage = new LoadGame(gameID, chessGame);
+
+        sendMessage(session, loadGameMessage);
     }
 
     private void sendGameStateToAll(GameData game) throws IOException {
-        broadcastMessageToAll(new LoadGame(game.game()));
+        ChessGame chessGame = game.game();
+        int gameID = game.gameID();
+        LoadGame loadGameMessage = new LoadGame(gameID, chessGame);
+
+        for (Session session : gameSessions.keySet()) {
+            if (session.isOpen()) {
+                sendMessage(session, loadGameMessage);
+            } else {
+                System.err.println("Skipping closed session: " + session.getId());
+            }
+        }
     }
 
     private void sendMessage(Session session, ServerMessage message) throws IOException {
-        session.getRemote().sendString(gson.toJson(message));
+        session.getAsyncRemote().sendText(gson.toJson(message));
     }
 
     private void broadcastMessage(Session currSession, ServerMessage message, boolean includeSelf) throws IOException {

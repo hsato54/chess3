@@ -35,7 +35,7 @@ public class MemoryGameDAO implements GameDAO {
         throw new DataAccessException("Game not found.");
     }
     @Override
-    public void updateGame(GameData updatedGame) {
+    public void updateGame(String s, GameData updatedGame) {
         games.removeIf(game -> game.gameID() == updatedGame.gameID());
         games.add(updatedGame);
     }

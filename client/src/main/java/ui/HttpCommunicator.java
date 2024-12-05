@@ -186,4 +186,9 @@ public class HttpCommunicator {
         }
         return responseMap;
     }
+    public GameData getGameByID(int gameID) {
+        String endpoint = "/game/" + gameID;
+        String response = sendGetRequest(endpoint);
+        return gson.fromJson(response, GameData.class);
+    }
 }
