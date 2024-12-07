@@ -98,7 +98,7 @@ public class SQLAuthDAO implements AuthDAO {
 
             stmt.executeUpdate();
         } catch (SQLException | DataAccessException e) {
-            e.printStackTrace(); // Log error for debugging.
+            e.printStackTrace();
         }
     }
 }
