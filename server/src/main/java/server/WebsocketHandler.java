@@ -5,11 +5,18 @@ import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import websocket.messages.*;
 import websocket.commands.*;
 import websocket.messages.Error;
 
+import javax.websocket.*;
 import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
 
 
 import java.io.IOException;
@@ -17,21 +24,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@WebSocket
 public class WebsocketHandler {
 
     private final Gson gson = new Gson();
     private final Map<Session, Integer> gameSessions = new ConcurrentHashMap<>();
 
+    @OnWebSocketConnect
     public void onConnect(Session session) {
         gameSessions.put(session, 0);
         System.out.println("New session connected: " + session.getId());
     }
 
+    @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         gameSessions.remove(session);
         System.out.println("Session closed: " + session.getId() + " Reason: " + reason);
     }
 
+    @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         try {
             if (message.contains("\"commandType\":\"JOIN_PLAYER\"")) {
@@ -57,6 +68,10 @@ public class WebsocketHandler {
         } catch (Exception e) {
             System.err.println("Error processing message: " + e.getMessage());
         }
+    }
+    @OnWebSocketError
+    public void onError(Session session, Throwable throwable) {
+        System.err.println("WebSocket error in session " + session.getId() + ": " + throwable.getMessage());
     }
 
     private void handleJoinPlayer(Session session, Connect command) throws IOException {

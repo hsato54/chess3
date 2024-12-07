@@ -9,6 +9,7 @@ import spark.*;
 public class Server {
 
 
+
     public static AuthDAO userService;
     public static GameDAO gameService;
     UserDAO userdao = new SQLUserDAO();
@@ -29,10 +30,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-
-        // Register your endpoints and handle exceptions here.
-
-
+        Spark.webSocket("/ws", WebsocketHandler.class);
 
         Spark.post("/user", userhandler::register);
         Spark.post("/session", userhandler::login);
@@ -42,9 +40,8 @@ public class Server {
         Spark.put("/game", gamehandler::joinGame);
         Spark.delete("/db", clearhandler::clearData);
 
-        //do the rest of the endpoints
 
-        //This line initializes the server and can be removed once you have a functioning endpoint 
+
         Spark.init();
 
         Spark.awaitInitialization();
