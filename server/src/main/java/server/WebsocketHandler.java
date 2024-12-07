@@ -5,6 +5,8 @@ import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
+import org.eclipse.jetty.server.Authentication;
+import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -13,10 +15,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import websocket.messages.*;
 import websocket.commands.*;
 import websocket.messages.Error;
-
-import javax.websocket.*;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 
 
 import java.io.IOException;
@@ -33,45 +31,48 @@ public class WebsocketHandler {
     @OnWebSocketConnect
     public void onConnect(Session session) {
         gameSessions.put(session, 0);
-        System.out.println("New session connected: " + session.getId());
+        System.out.println("New session connected: " + session);
     }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         gameSessions.remove(session);
-        System.out.println("Session closed: " + session.getId() + " Reason: " + reason);
+        System.out.println("Session closed: " + session + " Reason: " + reason);
     }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         try {
-            if (message.contains("\"commandType\":\"JOIN_PLAYER\"")) {
-                Connect command = gson.fromJson(message, Connect.class);
-                gameSessions.replace(session, command.getGameID());
-                handleJoinPlayer(session, command);
-            } else if (message.contains("\"commandType\":\"JOIN_OBSERVER\"")) {
-                Observe command = gson.fromJson(message, Observe.class);
-                gameSessions.replace(session, command.getGameID());
-                handleJoinObserver(session, command);
-            } else if (message.contains("\"commandType\":\"MAKE_MOVE\"")) {
-                MakeMove command = gson.fromJson(message, MakeMove.class);
-                handleMakeMove(session, command);
-            } else if (message.contains("\"commandType\":\"LEAVE\"")) {
-                Leave command = gson.fromJson(message, Leave.class);
-                handleLeave(session, command);
-            } else if (message.contains("\"commandType\":\"RESIGN\"")) {
-                Resign command = gson.fromJson(message, Resign.class);
-                handleResign(session, command);
-            } else {
-                System.out.println("Unknown command received: " + message);
+            UserGameCommand usergamecommand = gson.fromJson(message, UserGameCommand.class);
+            switch (usergamecommand.getCommandType()) {
+                case CONNECT -> {
+                    Connect command = gson.fromJson(message, Connect.class);
+                    gameSessions.replace(session, command.getGameID());
+                    handleJoinPlayer(session, command);
+                }
+                case MAKE_MOVE -> {
+                    MakeMove command = gson.fromJson(message, MakeMove.class);
+                    gameSessions.replace(session, command.getGameID());
+                    handleMakeMove(session, command);
+                }
+                case LEAVE -> {
+                    Leave command = gson.fromJson(message, Leave.class);
+                    handleLeave(session, command);
+                }
+                case RESIGN -> {
+                    Resign command = gson.fromJson(message, Resign.class);
+                    handleResign(session, command);
+                }
+
             }
-        } catch (Exception e) {
-            System.err.println("Error processing message: " + e.getMessage());
+        }
+        catch (Exception e) {
+         System.err.println("Error processing message: " + e.getMessage());
         }
     }
     @OnWebSocketError
     public void onError(Session session, Throwable throwable) {
-        System.err.println("WebSocket error in session " + session.getId() + ": " + throwable.getMessage());
+        System.err.println("WebSocket error in session " + session + ": " + throwable.getMessage());
     }
 
     private void handleJoinPlayer(Session session, Connect command) throws IOException {
@@ -97,17 +98,17 @@ public class WebsocketHandler {
         }
     }
 
-    private void handleJoinObserver(Session session, Observe command) throws IOException {
-        try {
-            AuthData auth = Server.userService.getAuth(command.getAuthToken());
-            GameData game = Server.gameService.getGame(command.getGameID());
-
-            sendNotification(session, "%s has joined the game as an observer".formatted(auth.username()));
-            sendGameState(session, game);
-        } catch (Exception e) {
-            handleException(session, e);
-        }
-    }
+//    private void handleJoinObserver(Session session, Observe command) throws IOException {
+//        try {
+//            AuthData auth = Server.userService.getAuth(command.getAuthToken());
+//            GameData game = Server.gameService.getGame(command.getGameID());
+//
+//            sendNotification(session, "%s has joined the game as an observer".formatted(auth.username()));
+//            sendGameState(session, game);
+//        } catch (Exception e) {
+//            handleException(session, e);
+//        }
+//    }
 
     private void handleMakeMove(Session session, MakeMove command) throws IOException {
         try {
@@ -206,13 +207,13 @@ public class WebsocketHandler {
             if (session.isOpen()) {
                 sendMessage(session, loadGameMessage);
             } else {
-                System.err.println("Skipping closed session: " + session.getId());
+                System.err.println("Skipping closed session: " + session);
             }
         }
     }
 
     private void sendMessage(Session session, ServerMessage message) throws IOException {
-        session.getAsyncRemote().sendText(gson.toJson(message));
+        session.getRemote().sendString(gson.toJson(message));
     }
 
     private void broadcastMessage(Session currSession, ServerMessage message, boolean includeSelf) throws IOException {
