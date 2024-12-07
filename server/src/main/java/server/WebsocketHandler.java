@@ -48,7 +48,7 @@ public class WebsocketHandler {
                 case CONNECT -> {
                     Connect command = gson.fromJson(message, Connect.class);
                     gameSessions.replace(session, command.getGameID());
-                    handleJoinPlayer(session, command);
+                    handleConnect(session, command);
                 }
                 case MAKE_MOVE -> {
                     MakeMove command = gson.fromJson(message, MakeMove.class);
@@ -75,40 +75,34 @@ public class WebsocketHandler {
         System.err.println("WebSocket error in session " + session + ": " + throwable.getMessage());
     }
 
-    private void handleJoinPlayer(Session session, Connect command) throws IOException {
+    private void handleConnect(Session session, Connect command) throws IOException {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
             GameData game = Server.gameService.getGame(command.getGameID());
-            ChessGame.TeamColor joiningColor = command.getColor().toString().equalsIgnoreCase("white")
-                    ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
-            boolean correctColor = joiningColor == ChessGame.TeamColor.WHITE
-                    ? Objects.equals(game.whiteUsername(), auth.username())
-                    : Objects.equals(game.blackUsername(), auth.username());
+            if (command.getColor() != null) {
+                ChessGame.TeamColor joiningColor = command.getColor().toString().equalsIgnoreCase("white")
+                        ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
-            if (!correctColor) {
-                sendError(session, "Error: attempting to join with the wrong color");
-                return;
+                boolean correctColor = joiningColor == ChessGame.TeamColor.WHITE
+                        ? Objects.equals(game.whiteUsername(), auth.username())
+                        : Objects.equals(game.blackUsername(), auth.username());
+
+                if (!correctColor) {
+                    sendError(session, "Error: attempting to join with the wrong color");
+                    return;
+                }
+
+                sendNotification(session, "%s has joined the game as %s".formatted(auth.username(), joiningColor));
             }
-
-            sendNotification(session, "%s has joined the game as %s".formatted(auth.username(), joiningColor));
+            else{
+                sendNotification(session, "%s has joined the game as an observer".formatted(auth.username()));
+            }
             sendGameState(session, game);
         } catch (Exception e) {
             handleException(session, e);
         }
     }
-
-//    private void handleJoinObserver(Session session, Observe command) throws IOException {
-//        try {
-//            AuthData auth = Server.userService.getAuth(command.getAuthToken());
-//            GameData game = Server.gameService.getGame(command.getGameID());
-//
-//            sendNotification(session, "%s has joined the game as an observer".formatted(auth.username()));
-//            sendGameState(session, game);
-//        } catch (Exception e) {
-//            handleException(session, e);
-//        }
-//    }
 
     private void handleMakeMove(Session session, MakeMove command) throws IOException {
         try {
