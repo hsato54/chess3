@@ -30,17 +30,17 @@ public class WebsocketHandler {
     private final Gson gson = new Gson();
     private final Map<Session, Integer> gameSessions = new ConcurrentHashMap<>();
 
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
-        gameSessions.put(session, null);
-        System.out.println("New session connected: " + session);
-    }
-
-    @OnWebSocketClose
-    public void onClose(Session session, int statusCode, String reason) {
-        gameSessions.remove(session);
-        System.out.println("Session closed: " + session + " Reason: " + reason);
-    }
+//    @OnWebSocketConnect
+//    public void onConnect(Session session) {
+//        gameSessions.put(session, null);
+//        System.out.println("New session connected: " + session);
+//    }
+//
+//    @OnWebSocketClose
+//    public void onClose(Session session, int statusCode, String reason) {
+//        gameSessions.remove(session);
+//        System.out.println("Session closed: " + session + " Reason: " + reason);
+//    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
@@ -138,11 +138,14 @@ public class WebsocketHandler {
                 }
 
                 // Notify and send game state
+                gameSessions.put(session, game.gameID());
                 Notification notif = new Notification("%s has joined the game as %s".formatted(auth.username(), joiningColor));
                 broadcastMessage(session, notif);
 
-            } else {
+            }
+            else {
                 // Handle observer join logic
+                gameSessions.put(session, game.gameID());
                 Notification notif = new Notification("%s has joined the game as an observer".formatted(auth.username()));
                 broadcastMessage(session, notif);
             }
@@ -216,7 +219,10 @@ public class WebsocketHandler {
             ChessGame.TeamColor userColor = getTeamColor(auth.username(), game);
             String opponent = userColor == ChessGame.TeamColor.WHITE ? game.blackUsername() : game.whiteUsername();
 
-            broadcastMessage(session, new Notification("%s has resigned. %s wins!".formatted(auth.username(), opponent)));
+            Notification resignNotification = new Notification("%s has resigned. %s wins!".formatted(auth.username(), opponent));
+
+            broadcastMessage(session, resignNotification);
+            sendMessage(session, resignNotification);
             Server.gameService.updateGame(auth.authToken(), game);
         } catch (Exception e) {
             handleException(session, e);
@@ -266,8 +272,9 @@ public class WebsocketHandler {
         }
     }
     private void handleException(Session session, Exception e) throws IOException {
-        sendError(session, new Error(e.getMessage()));
-        System.err.println("Error: " + e.getMessage());
+        String errorMessage = (e.getMessage() != null) ? e.getMessage() : "An unexpected error occurred.";
+        sendError(session, new Error(errorMessage));
+        System.err.println("Error: " + errorMessage);
     }
 
     private ChessGame.TeamColor getTeamColor(String username, GameData game) {

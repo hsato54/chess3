@@ -20,6 +20,8 @@ public class Server {
     private final GameHandler gamehandler;
     private final ClearHandler clearhandler;
 
+    private final WebsocketHandler websockethandler;
+
 
     public Server() {
         UserDAO userdao = new SQLUserDAO();
@@ -33,6 +35,8 @@ public class Server {
         userhandler = new UserHandler(userService);
         gamehandler = new GameHandler(gameService);
         clearhandler = new ClearHandler(clearservice);
+
+        websockethandler = new WebsocketHandler();
     }
 
     public int run(int desiredPort) {
@@ -40,11 +44,11 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        System.out.println("[DEBUG] Registering WebSocket endpoint at /ws");
-        Spark.webSocket("/ws", WebsocketHandler.class);
+        //System.out.println("[DEBUG] Registering WebSocket endpoint at /ws");
+        Spark.webSocket("/ws", websockethandler);
 
 
-        System.out.println("[DEBUG] Registering REST endpoints...");
+        //System.out.println("[DEBUG] Registering REST endpoints...");
         Spark.post("/user", userhandler::register);
         Spark.post("/session", userhandler::login);
         Spark.delete("/session", userhandler::logout);

@@ -4,10 +4,11 @@ import chess.ChessGame;
 
 public class Error extends ServerMessage {
 
-    String errorMessage;
+    private final String errorMessage;
     public Error(String errorMessage) {
         super(ServerMessageType.ERROR);
-        this.errorMessage = errorMessage;
+        //this.errorMessage = errorMessage;
+        this.errorMessage = errorMessage != null ? errorMessage : "An error occurred.";
     }
 
     public String getMessage() {
