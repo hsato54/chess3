@@ -3,7 +3,9 @@ package server;
 import chess.ChessGame;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import dataaccess.AuthDAO;
 import dataaccess.BadRequestException;
+import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import model.AuthData;
 import model.GameData;
@@ -28,7 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebsocketHandler {
 
     private final Gson gson = new Gson();
-    private final Map<Session, Integer> gameSessions = new ConcurrentHashMap<>();
+    private final Map<Integer, Map<String, Session>> gameSessions = new ConcurrentHashMap<>();
+    private AuthDAO authDAO;
 
 //    @OnWebSocketConnect
 //    public void onConnect(Session session) {
@@ -42,20 +45,31 @@ public class WebsocketHandler {
 //        System.out.println("Session closed: " + session + " Reason: " + reason);
 //    }
 
+    WebsocketHandler(AuthDAO authDAO){
+        this.authDAO = authDAO;
+    }
+
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) {
+    public void onMessage(Session session, String message) throws IOException {
         System.out.println("Message received: " + message);
         try {
             UserGameCommand usergamecommand = gson.fromJson(message, UserGameCommand.class);
+            verifyAuthToken(usergamecommand.getAuthToken());
             switch (usergamecommand.getCommandType()) {
                 case CONNECT -> {
                     Connect command = gson.fromJson(message, Connect.class);
-                    gameSessions.replace(session, command.getGameID());
+//                    if (gameSessions.get(command.getGameID()) == null){
+//                        gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
+//                    }
+//                    gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                     handleConnect(session, command);
                 }
                 case MAKE_MOVE -> {
                     MakeMove command = gson.fromJson(message, MakeMove.class);
-                    gameSessions.replace(session, command.getGameID());
+//                    if(gameSessions.get(command.getGameID()) == null) {
+//                        gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
+//                    }
+//                    gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                     handleMakeMove(session, command);
                 }
                 case LEAVE -> {
@@ -71,6 +85,7 @@ public class WebsocketHandler {
         }
         catch (Exception e) {
          System.err.println("Error processing message: " + e.getMessage());
+         sendError(session, new Error("Invalid Authtoken"));
         }
     }
     @OnWebSocketError
@@ -138,16 +153,22 @@ public class WebsocketHandler {
                 }
 
                 // Notify and send game state
-                gameSessions.put(session, game.gameID());
+                if (gameSessions.get(command.getGameID()) == null){
+                    gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
+                }
+                gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                 Notification notif = new Notification("%s has joined the game as %s".formatted(auth.username(), joiningColor));
-                broadcastMessage(session, notif);
+                broadcastMessage(auth.authToken(), notif, game.gameID());
 
             }
             else {
                 // Handle observer join logic
-                gameSessions.put(session, game.gameID());
+                if (gameSessions.get(command.getGameID()) == null){
+                    gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
+                }
+                gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                 Notification notif = new Notification("%s has joined the game as an observer".formatted(auth.username()));
-                broadcastMessage(session, notif);
+                broadcastMessage(auth.authToken(), notif, game.gameID());
             }
             sendGameState(session, game);
         } catch (UnauthorizedException e) {
@@ -184,12 +205,12 @@ public class WebsocketHandler {
             Server.gameService.updateGame(auth.authToken(), game);
 
             if (game.game().isInCheckmate(userColor.opponent())) {
-                broadcastMessage(session, new Notification("Checkmate! %s wins!".formatted(auth.username())));
+                broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
             } else if (game.game().isInCheck(userColor.opponent())) {
-                broadcastMessage(session, new Notification("Check! %s has placed their opponent in check!".formatted(auth.username())));
+                broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".formatted(auth.username())), game.gameID());
             } else {
-                broadcastMessage(session, new Notification("Move made by %s".formatted(auth.username())));
+                broadcastMessage(auth.authToken(), new Notification("Move made by %s".formatted(auth.username())), game.gameID());
             }
 
             sendGameStateToAll(game);
@@ -204,6 +225,7 @@ public class WebsocketHandler {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
             sendNotification(session, "%s has left the game.".formatted(auth.username()));
+            gameSessions.remove(session);
             session.close();
         } catch (Exception e) {
             handleException(session, e);
@@ -221,7 +243,7 @@ public class WebsocketHandler {
 
             Notification resignNotification = new Notification("%s has resigned. %s wins!".formatted(auth.username(), opponent));
 
-            broadcastMessage(session, resignNotification);
+            broadcastMessage(auth.authToken(), resignNotification, game.gameID());
             sendMessage(session, resignNotification);
             Server.gameService.updateGame(auth.authToken(), game);
         } catch (Exception e) {
@@ -251,7 +273,7 @@ public class WebsocketHandler {
         int gameID = game.gameID();
         LoadGame loadGameMessage = new LoadGame(gameID, chessGame);
 
-        for (Session session : gameSessions.keySet()) {
+        for (Session session : gameSessions.get(gameID).values()) {
             if (session.isOpen()) {
                 sendMessage(session, loadGameMessage);
             } else {
@@ -264,10 +286,10 @@ public class WebsocketHandler {
         session.getRemote().sendString(gson.toJson(message));
     }
 
-    private void broadcastMessage(Session sender, ServerMessage message) throws IOException {
-        for (Session session : gameSessions.keySet()) {
-            if (!session.equals(sender)) {
-                sendMessage(session, message);
+    private void broadcastMessage(String sender, ServerMessage message, int gameID) throws IOException {
+        for (String authToken : gameSessions.get(gameID).keySet()) {
+            if (!authToken.equals(sender)) {
+                sendMessage(gameSessions.get(gameID).get(authToken), message);
             }
         }
     }
@@ -284,5 +306,13 @@ public class WebsocketHandler {
             return ChessGame.TeamColor.BLACK;
         }
         return null;
+    }
+
+    private AuthData verifyAuthToken(String authToken) throws UnauthorizedException {
+        try {
+            return authDAO.getAuth(authToken);
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException();
+        }
     }
 }
