@@ -4,6 +4,8 @@ import org.junit.jupiter.api.*;
 import server.Server;
 import ui.*;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
@@ -115,7 +117,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testJoinGameSuccess() {
+    public void testJoinGameSuccess() throws IOException {
         facade.register("player5", "password", "p5@email.com");
         facade.login("player5", "password");
         int gameId = facade.createGame("JoinableGame");
@@ -125,7 +127,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testJoinGameFail() {
+    public void testJoinGameFail() throws IOException {
         facade.register("player6", "password", "p6@email.com");
         facade.login("player6", "password");
 
@@ -134,7 +136,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testJoinGameFailWithInvalidID() {
+    public void testJoinGameFailWithInvalidID() throws IOException {
         facade.register("player4", "password", "p4@email.com");
         facade.login("player4", "password");
 

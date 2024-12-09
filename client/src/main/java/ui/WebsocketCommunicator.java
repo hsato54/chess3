@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import websocket.commands.Connect;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
@@ -31,7 +32,7 @@ public class WebsocketCommunicator extends Endpoint {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, uri);
 
-            this.session.addMessageHandler((MessageHandler.Whole<String>) this::handleMessage);
+            this.session.addMessageHandler(String.class, this::handleMessage);
 
         } catch (DeploymentException | IOException | URISyntaxException e) {
             throw new Exception("Failed to establish WebSocket connection.", e);
@@ -57,7 +58,25 @@ public class WebsocketCommunicator extends Endpoint {
 
     private void handleNotification(String message) {
         Notification notification = gson.fromJson(message, Notification.class);
-        printNotification(notification.getMessage());
+        String notificationMessage = notification.getMessage();
+
+        if (notificationMessage.contains("has joined the game as White")) {
+            System.out.println("Player joined as White: " + notificationMessage);
+        } else if (notificationMessage.contains("has joined the game as Black")) {
+            System.out.println("Player joined as Black: " + notificationMessage);
+        } else if (notificationMessage.contains("has joined the game as an observer")) {
+            System.out.println("Observer joined: " + notificationMessage);
+        } else if (notificationMessage.contains("has resigned")) {
+            System.out.println("Resignation: " + notificationMessage);
+        } else if (notificationMessage.contains("has made a move")) {
+            System.out.println("Move Notification: " + notificationMessage);
+        } else if (notificationMessage.contains("Checkmate!")) {
+            System.out.println("Game End: " + notificationMessage);
+        } else {
+            System.out.println("Notification: " + notificationMessage);
+        }
+
+        System.out.print("[IN-GAME] >>> ");
     }
 
     private void handleError(String message) {
@@ -67,7 +86,6 @@ public class WebsocketCommunicator extends Endpoint {
 
     private void handleLoadGame(String message) {
         LoadGame loadGame = gson.fromJson(message, LoadGame.class);
-        int gameID = loadGame.getGameID();
         ChessGame game = loadGame.getGame();
         GameplayUI gameplayUI = new GameplayUI(server, loadGame.getGameID(), game.getTeamTurn() == ChessGame.TeamColor.WHITE);
         printLoadedGame(game, gameplayUI);
@@ -85,9 +103,9 @@ public class WebsocketCommunicator extends Endpoint {
         System.out.print("[IN-GAME] >>> ");
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
         if (this.session != null && this.session.isOpen()) {
-            this.session.getAsyncRemote().sendText(message);
+            this.session.getBasicRemote().sendText(message);
         } else {
             System.out.println("WebSocket connection is not open. Message not sent.");
         }

@@ -2,6 +2,7 @@ package ui;
 
 import model.GameData;
 
+import java.io.IOException;
 import java.util.*;
 
 import static java.lang.System.out;
@@ -16,7 +17,7 @@ public class PostloginUI {
         this.server = server;
     }
 
-    public void run() {
+    public void run() throws IOException {
         out.println("[LOGGED_IN] >>> Type 'help' to get started.");
 
         while (true) {
@@ -100,7 +101,7 @@ public class PostloginUI {
         }
     }
 
-    private void handleJoinGame(String input) {
+    private void handleJoinGame(String input) throws IOException {
         String[] tokens = input.split(" ");
         if (tokens.length != 3 || (!tokens[2].equalsIgnoreCase("WHITE") && !tokens[2].equalsIgnoreCase("BLACK"))) {
             out.println("Invalid command. Usage: join <NUMBER> [WHITE|BLACK]");
@@ -116,7 +117,9 @@ public class PostloginUI {
         if (success) {
             out.printf("Joined game '%s' as %s.\n", selectedGame.gameName(), color);
             boolean isPlayerWhite = color.equalsIgnoreCase("WHITE");
-            new GameplayUI(server, selectedGame.gameID(), isPlayerWhite).displayBoard();
+            GameplayUI gameplayui= new GameplayUI(server, selectedGame.gameID(), isPlayerWhite);
+            gameplayui.displayBoard();
+            gameplayui.run();
         } else {
             out.println("Failed to join game. Please check the game details and try again.");
         }
@@ -139,7 +142,7 @@ public class PostloginUI {
         return selectedGame;
     }
 
-    private void handleObserveGame(String input) {
+    private void handleObserveGame(String input) throws IOException {
         String[] tokens = input.split(" ");
         if (tokens.length != 2) {
             out.println("Invalid command. Usage: observe <ID>");
@@ -149,6 +152,11 @@ public class PostloginUI {
         if (selectedGame == null) {
             return;
         }
-        out.printf("Game Name: %s\n", selectedGame.gameName());
+        server.connect(selectedGame.gameID(), null);
+        out.printf("Observing game '%s'.\n", selectedGame.gameName());
+
+        GameplayUI gameplayUI = new GameplayUI(server, selectedGame.gameID(), true);
+        gameplayUI.displayBoard();
+        gameplayUI.runobserve();
     }
 }

@@ -1,6 +1,7 @@
 package ui;
 
 
+import java.io.IOException;
 import java.util.Scanner;
 import static java.lang.System.out;
 
@@ -14,7 +15,7 @@ public class PreloginUI {
         this.server = server;
         this.postloginUI = new PostloginUI(server);
     }
-    public void run() {
+    public void run() throws IOException {
         out.println(EscapeSequences.WHITE_KING + " Welcome to 240 chess. Type Help to get started. " + EscapeSequences.WHITE_KING);
 
         while (true) {
@@ -46,7 +47,7 @@ public class PreloginUI {
         out.println("quit - playing chess");
         out.println("help - with possible commands");
     }
-    private void handleLogin(String input){
+    private void handleLogin(String input) throws IOException {
         String[] tokens = input.split(" ");
         if (tokens.length != 3){
             out.println("Invalid login. Please provide a username and password");
@@ -67,7 +68,7 @@ public class PreloginUI {
 
     }
 
-    private void handleRegister(String input){
+    private void handleRegister(String input) throws IOException {
         String[] tokens = input.split(" ");
         if (tokens.length != 4){
             out.println("Invalid. Please provide a username, password, and email");

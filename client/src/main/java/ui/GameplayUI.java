@@ -2,6 +2,7 @@ package ui;
 
 import chess.*;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
@@ -27,7 +28,8 @@ public class GameplayUI {
         this.isWhiteAtBottom = isPlayerWhite;
     }
 
-    public void run() {
+    public void run() throws IOException {
+
         System.out.println("Game started! Type 'help' to see available commands.");
 
         while (true) {
@@ -54,6 +56,28 @@ public class GameplayUI {
         }
     }
 
+    public void runobserve() throws IOException {
+        System.out.println("Observing the game! Type 'help' to see available commands.");
+
+        while (true) {
+            System.out.print("[OBSERVING] >>> ");
+            String command = scanner.nextLine().trim().toLowerCase();
+
+            if (command.equals("help")) {
+                displayObserverHelp();
+            } else if (command.equals("redraw")) {
+                redrawBoard();
+            } else if (command.equals("highlight")) {
+                highlightLegalMoves();
+            } else if (command.equals("leave")) {
+                leaveGame();
+                break;
+            } else {
+                System.out.println("Unknown command. Type 'help' for available commands.");
+            }
+        }
+    }
+
     private void displayHelp() {
         System.out.println("Available Commands:");
         System.out.println("help - Display this menu");
@@ -63,15 +87,22 @@ public class GameplayUI {
         System.out.println("resign - Resign the game");
         System.out.println("highlight - Highlight legal moves for a piece");
     }
+    private void displayObserverHelp(){
+        System.out.println("Available Commands for Observers:");
+        System.out.println("help - Display this menu");
+        System.out.println("redraw - Redraw the chessboard");
+        System.out.println("leave - Stop observing the game");
+        System.out.println("highlight - Highlight legal moves for a piece");
+    }
     private void redrawBoard() {
         System.out.println("Redrawing the board...");
         displayBoardOrientation(isWhiteAtBottom);
     }
-    private void leaveGame() {
+    private void leaveGame() throws IOException {
         System.out.println("You have left the game. Returning to main menu...");
         server.leave(gameID);
     }
-    private void resignGame() {
+    private void resignGame() throws IOException {
         System.out.print("Are you sure you want to resign? (yes/no): ");
         String confirmation = scanner.nextLine().trim().toLowerCase();
         if (confirmation.equals("yes")) {
@@ -111,8 +142,23 @@ public class GameplayUI {
 
             server.makeMove(gameID, move);
             System.out.println("Move sent to server.");
+
+
+            System.out.println("Fetching updated game state...");
+            ChessGame updatedGame = server.getGame(gameID);
+            if (updatedGame == null) {
+                System.out.println("Error: Received null game state from server.");
+                return;
+            }
+            System.out.println("Updating local game state...");
+            updateGame(updatedGame);
+            redrawBoard();
+
+
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid position format. Use algebraic notation (e.g., 'e2 e4').");
+        }catch(IOException io){
+            System.out.println("ioexception");
         }
     }
     private void highlightLegalMoves() {
@@ -268,5 +314,18 @@ public class GameplayUI {
     public void updateGame(ChessGame game) {
         this.chessGame.setBoard(game.getBoard());
         this.isWhiteAtBottom = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
+    }
+
+    private void observeGame() {
+        System.out.print("Enter the game ID to observe: ");
+        try {
+            int gameIDToObserve = Integer.parseInt(scanner.nextLine().trim());
+            server.observeGame(gameIDToObserve); // Assuming server facade supports observing
+            System.out.printf("Observing game ID: %d. You will now receive updates.\n", gameIDToObserve);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid game ID. Please enter a valid number.");
+        } catch (IOException io){
+            System.out.println("ioexception");
+        }
     }
 }
