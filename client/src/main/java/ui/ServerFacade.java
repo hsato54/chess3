@@ -82,10 +82,6 @@ public class ServerFacade {
         sendCommand(new Connect(authToken, gameID, color));
     }
 
-    public void observe(int gameID) {
-        sendCommand(new Observe(authToken, gameID));
-    }
-
     public void makeMove(int gameID, ChessMove move) {
         sendCommand(new MakeMove(authToken, gameID, move));
     }
@@ -99,7 +95,7 @@ public class ServerFacade {
     }
 
     public ChessGame getGame(int gameID) {
-        GameData gameData = http.getGameByID(gameID); // Example backend call
+        GameData gameData = http.getGameByID(gameID);
         return gameData != null ? gameData.getGame() : null;
     }
 }

@@ -58,18 +58,10 @@ public class WebsocketHandler {
             switch (usergamecommand.getCommandType()) {
                 case CONNECT -> {
                     Connect command = gson.fromJson(message, Connect.class);
-//                    if (gameSessions.get(command.getGameID()) == null){
-//                        gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
-//                    }
-//                    gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                     handleConnect(session, command);
                 }
                 case MAKE_MOVE -> {
                     MakeMove command = gson.fromJson(message, MakeMove.class);
-//                    if(gameSessions.get(command.getGameID()) == null) {
-//                        gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
-//                    }
-//                    gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
                     handleMakeMove(session, command);
                 }
                 case LEAVE -> {
@@ -85,13 +77,13 @@ public class WebsocketHandler {
         }
         catch (Exception e) {
          System.err.println("Error processing message: " + e.getMessage());
-         sendError(session, new Error("Invalid Authtoken"));
+         sendError(session, new Error("Error: Invalid AuthToken"));
         }
     }
-    @OnWebSocketError
-    public void onError(Session session, Throwable throwable) {
-        System.err.println("WebSocket error in session " + session + ": " + throwable.getMessage());
-    }
+//    @OnWebSocketError
+//    public void onError(Session session, Throwable throwable) {
+//        System.err.println("WebSocket error in session " + session + ": " + throwable.getMessage());
+//    }
 
     private void handleConnect(Session session, Connect command) throws IOException {
         try {
@@ -99,32 +91,6 @@ public class WebsocketHandler {
             if (Server.userService == null || Server.gameService == null) {
                 throw new IllegalStateException("Server services are not initialized");
             }
-
-//            AuthData auth = Server.userService.getAuth(command.getAuthToken());
-//            GameData game = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
-
-//            if (command.getColor() == null) {
-//                sendGameState(session, game);
-//                return;
-//            }
-//
-//            ChessGame.TeamColor joiningColor = command.getColor().toString().equalsIgnoreCase("white")
-//                    ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-//
-//            boolean correctColor = joiningColor == ChessGame.TeamColor.WHITE
-//                    ? Objects.equals(game.whiteUsername(), auth.username())
-//                    : Objects.equals(game.blackUsername(), auth.username());
-//
-//            if (!correctColor) {
-//                sendError(session, "Error: attempting to join with the wrong color");
-//                return;
-//            }
-//
-//            sendNotification(session, "%s has joined the game as %s".formatted(auth.username(), joiningColor));
-//            sendGameState(session, game);
-//        } catch (Exception e) {
-//            handleException(session, e);
-//        }
 
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
             if (auth == null) {
@@ -152,7 +118,6 @@ public class WebsocketHandler {
                     return;
                 }
 
-                // Notify and send game state
                 if (gameSessions.get(command.getGameID()) == null){
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
@@ -224,9 +189,18 @@ public class WebsocketHandler {
     private void handleLeave(Session session, Leave command) throws IOException {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
-            sendNotification(session, "%s has left the game.".formatted(auth.username()));
-            gameSessions.remove(session);
-            session.close();
+            GameData game = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+
+            String playerMessage = "%s has left the game.".formatted(auth.username());
+            broadcastMessage(auth.authToken(), new Notification(playerMessage), game.gameID());
+
+            Map<String, Session> gameSessionMap = gameSessions.get(game.gameID());
+            if (gameSessionMap != null) {
+                gameSessionMap.remove(auth.authToken());
+            }
+            if (session.isOpen()) {
+                session.close();
+            }
         } catch (Exception e) {
             handleException(session, e);
         }
@@ -236,9 +210,20 @@ public class WebsocketHandler {
         try {
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
             GameData game = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
-            game.game().setGameOver(true);
+
+            if (game.game().getGameOver()) {
+                sendError(session, new Error("Error: The game is already over. Resignation is not allowed."));
+                return;
+            }
 
             ChessGame.TeamColor userColor = getTeamColor(auth.username(), game);
+
+            if (userColor == null) {
+                sendError(session, new Error("Error: Observers cannot resign from a game."));
+                return;
+            }
+
+            game.game().setGameOver(true);
             String opponent = userColor == ChessGame.TeamColor.WHITE ? game.blackUsername() : game.whiteUsername();
 
             Notification resignNotification = new Notification("%s has resigned. %s wins!".formatted(auth.username(), opponent));
