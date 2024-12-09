@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.UnauthorizedException;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import model.UserData;
@@ -58,6 +59,13 @@ public class UserService {
             throw new DataAccessException("Invalid auth token.");
         }
         authDAO.deleteAuth(authToken);
+    }
+    public AuthData getAuth(String authToken) throws UnauthorizedException {
+        try {
+            return authDAO.getAuth(authToken);
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException();
+        }
     }
 
 

@@ -6,32 +6,45 @@ import service.GameService;
 import service.UserService;
 import spark.*;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Server {
 
 
 
-    public static AuthDAO userService;
-    public static GameDAO gameService;
-    UserDAO userdao = new SQLUserDAO();
-    GameDAO gamedao = new SQLGameDAO();
-    AuthDAO authdao = new SQLAuthDAO();
+    public static UserService userService;
+    public static GameService gameService;
+
+    private final ClearService clearservice;
+    private final UserHandler userhandler;
+    private final GameHandler gamehandler;
+    private final ClearHandler clearhandler;
 
 
-    UserService userservice = new UserService(userdao, authdao);
-    GameService gameservice = new GameService(gamedao, authdao);
-    ClearService clearservice = new ClearService(userdao, gamedao, authdao);
+    public Server() {
+        UserDAO userdao = new SQLUserDAO();
+        GameDAO gamedao = new SQLGameDAO();
+        AuthDAO authdao = new SQLAuthDAO();
 
-    UserHandler userhandler = new UserHandler(userservice);
-    GameHandler gamehandler = new GameHandler(gameservice);
-    ClearHandler clearhandler = new ClearHandler(clearservice);
+        userService = new UserService(userdao, authdao);
+        gameService = new GameService(gamedao, authdao);
+
+        clearservice = new ClearService(userdao, gamedao, authdao);
+        userhandler = new UserHandler(userService);
+        gamehandler = new GameHandler(gameService);
+        clearhandler = new ClearHandler(clearservice);
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
 
+        System.out.println("[DEBUG] Registering WebSocket endpoint at /ws");
         Spark.webSocket("/ws", WebsocketHandler.class);
 
+
+        System.out.println("[DEBUG] Registering REST endpoints...");
         Spark.post("/user", userhandler::register);
         Spark.post("/session", userhandler::login);
         Spark.delete("/session", userhandler::logout);
