@@ -96,7 +96,7 @@ public class ServerFacade {
 
     public ChessGame getGame(int gameID) {
         GameData gameData = http.getGameByID(gameID);
-        return gameData != null ? gameData.getGame() : null;
+        return gameData != null ? gameData.game() : null;
     }
 }
 

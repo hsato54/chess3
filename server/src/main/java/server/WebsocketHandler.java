@@ -9,13 +9,9 @@ import dataaccess.DataAccessException;
 import dataaccess.UnauthorizedException;
 import model.AuthData;
 import model.GameData;
-import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import websocket.messages.*;
 import websocket.commands.*;
 import websocket.messages.Error;
@@ -191,6 +187,17 @@ public class WebsocketHandler {
             AuthData auth = Server.userService.getAuth(command.getAuthToken());
             GameData game = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
 
+            ChessGame.TeamColor teamColor = getTeamColor(auth.username(), game);
+
+            if (teamColor != null) {
+                if (teamColor == ChessGame.TeamColor.WHITE) {
+                    game = new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game());
+                } else if (teamColor == ChessGame.TeamColor.BLACK) {
+                    game = new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game());
+                }
+                Server.gameService.updateGame(auth.authToken(), game);
+            }
+
             String playerMessage = "%s has left the game.".formatted(auth.username());
             broadcastMessage(auth.authToken(), new Notification(playerMessage), game.gameID());
 
@@ -234,10 +241,6 @@ public class WebsocketHandler {
         } catch (Exception e) {
             handleException(session, e);
         }
-    }
-
-    private void sendNotification(Session session, String message) throws IOException {
-        sendMessage(session, new Notification(message));
     }
 
     private void sendError(Session session, Error error) throws IOException {
