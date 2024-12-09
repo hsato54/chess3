@@ -29,17 +29,6 @@ public class WebsocketHandler {
     private final Map<Integer, Map<String, Session>> gameSessions = new ConcurrentHashMap<>();
     private AuthDAO authDAO;
 
-//    @OnWebSocketConnect
-//    public void onConnect(Session session) {
-//        gameSessions.put(session, null);
-//        System.out.println("New session connected: " + session);
-//    }
-//
-//    @OnWebSocketClose
-//    public void onClose(Session session, int statusCode, String reason) {
-//        gameSessions.remove(session);
-//        System.out.println("Session closed: " + session + " Reason: " + reason);
-//    }
 
     WebsocketHandler(AuthDAO authDAO){
         this.authDAO = authDAO;
@@ -76,10 +65,6 @@ public class WebsocketHandler {
          sendError(session, new Error("Error: Invalid AuthToken"));
         }
     }
-//    @OnWebSocketError
-//    public void onError(Session session, Throwable throwable) {
-//        System.err.println("WebSocket error in session " + session + ": " + throwable.getMessage());
-//    }
 
     private void handleConnect(Session session, Connect command) throws IOException {
         try {
