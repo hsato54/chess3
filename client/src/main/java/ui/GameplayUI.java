@@ -143,7 +143,6 @@ public class GameplayUI {
             server.makeMove(gameID, move);
             System.out.println("Move sent to server.");
 
-
             System.out.println("Fetching updated game state...");
             ChessGame updatedGame = server.getGame(gameID);
             if (updatedGame == null) {
@@ -159,7 +158,10 @@ public class GameplayUI {
             System.out.println("Invalid position format. Use algebraic notation (e.g., 'e2 e4').");
         }catch(IOException io){
             System.out.println("ioexception");
+        }catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
         }
+
     }
     private void highlightLegalMoves() {
         System.out.print("Enter the position of the piece to highlight (e.g., 'e2'): ");
@@ -174,8 +176,14 @@ public class GameplayUI {
                 return;
             }
 
+            ChessGame updatedGame = server.getGame(gameID);
+            if (updatedGame == null) {
+                System.out.println("Error: Unable to fetch game state for highlighting moves.");
+                return;
+            }
+
             Collection<ChessMove> validMoves = server.getGame(gameID).validMoves(position);
-            if (validMoves.isEmpty()) {
+            if (validMoves == null || validMoves.isEmpty()) {
                 System.out.println("No legal moves available for this piece.");
                 return;
             }

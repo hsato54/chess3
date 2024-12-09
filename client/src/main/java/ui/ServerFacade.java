@@ -108,8 +108,26 @@ public class ServerFacade {
     }
 
     public ChessGame getGame(int gameID) {
-        GameData gameData = http.getGameByID(gameID);
-        return gameData != null ? gameData.game() : null;
+        try {
+            GameData gameData = http.getGameByID(gameID);
+
+            if (gameData == null) {
+                System.out.println("Error: No game data returned for gameID: " + gameID);
+                return null;
+            }
+
+            ChessGame game = gameData.game();
+            if (game == null) {
+                System.out.println("Error: Game data is missing the game object.");
+                return null;
+            }
+
+            return game;
+        } catch (Exception e) {
+            System.out.println("Error retrieving game data: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
     public void observeGame(int gameID) throws IOException {
         Connect connectCommand = new Connect(authToken, gameID, null);

@@ -1,6 +1,7 @@
 package ui;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import model.ListGames;
 
@@ -187,8 +188,36 @@ public class HttpCommunicator {
         return responseMap;
     }
     public GameData getGameByID(int gameID) {
-        String endpoint = "/game/" + gameID;
-        String response = sendGetRequest(endpoint);
-        return gson.fromJson(response, GameData.class);
+        String endpoint = String.format("/api/game/%d", gameID);
+
+        try {
+            System.out.println("Sending GET request to: " + baseURL + endpoint);
+
+            // Fetch the response using sendGetRequest
+            String response = sendGetRequest(endpoint);
+
+            System.out.println("Server response: " + response);
+
+            // Check if response is valid JSON
+            if (response == null || response.isEmpty()) {
+                System.out.println("Error: Empty response from server.");
+                return null;
+            }
+            if (!response.trim().startsWith("{")) {
+                System.out.println("Error: Server returned non-JSON response: " + response);
+                return null;
+            }
+
+            // Attempt to parse response as GameData
+            return gson.fromJson(response, GameData.class);
+        } catch (JsonSyntaxException e) {
+            System.out.println("JsonSyntaxException: Response was not valid JSON.");
+            e.printStackTrace();
+            return null;
+        }catch (Exception e) {
+            System.out.println("Error retrieving game data: " + e.getMessage());
+            return null;
+        }
     }
+
 }
