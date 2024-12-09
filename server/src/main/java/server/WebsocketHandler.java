@@ -156,7 +156,10 @@ public class WebsocketHandler {
                 broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
             } else if (game.game().isInCheck(userColor.opponent())) {
-                broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".formatted(auth.username())), game.gameID());
+                String checkMessage = "Check! %s has placed their opponent in check!"
+                        .formatted(auth.username());
+                Notification notification = new Notification(checkMessage);
+                broadcastMessage(auth.authToken(), notification, game.gameID());
             } else {
                 broadcastMessage(auth.authToken(), new Notification("Move made by %s".formatted(auth.username())), game.gameID());
             }
