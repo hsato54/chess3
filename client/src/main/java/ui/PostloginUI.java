@@ -107,7 +107,9 @@ public class PostloginUI {
             return;
         }
         GameData selectedGame = getGameData(tokens);
-        if (selectedGame == null) return;
+        if (selectedGame == null) {
+            return;
+        }
         String color = tokens[2].toUpperCase();
 
         boolean success = server.joinGame(selectedGame.gameID(), color);
@@ -144,7 +146,9 @@ public class PostloginUI {
             return;
         }
         GameData selectedGame = getGameData(tokens);
-        if (selectedGame == null) return;
+        if (selectedGame == null) {
+            return;
+        }
         out.printf("Game Name: %s\n", selectedGame.gameName());
     }
 }

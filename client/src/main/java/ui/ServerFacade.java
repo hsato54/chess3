@@ -67,13 +67,6 @@ public class ServerFacade {
     public void clear() {
         http.clear();
     }
-    private void connectWS() {
-        try {
-            ws = new WebsocketCommunicator(server, this);
-        } catch (Exception e) {
-            System.out.println("Failed to establish WebSocket connection");
-        }
-    }
     public void sendCommand(UserGameCommand command) {
         String message = new Gson().toJson(command);
         ws.sendMessage(message);

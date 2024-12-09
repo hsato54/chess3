@@ -103,7 +103,8 @@ public class WebsocketHandler {
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
                 gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
-                Notification notif = new Notification("%s has joined the game as %s".formatted(auth.username(), joiningColor));
+                String message = "%s has joined the game as %s".formatted(auth.username(), joiningColor);
+                Notification notif = new Notification(message);
                 broadcastMessage(auth.authToken(), notif, game.gameID());
 
             }
@@ -113,7 +114,8 @@ public class WebsocketHandler {
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
                 gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
-                Notification notif = new Notification("%s has joined the game as an observer".formatted(auth.username()));
+                String message = "%s has joined the game as %s".formatted(auth.username());
+                Notification notif = new Notification(message);
                 broadcastMessage(auth.authToken(), notif, game.gameID());
             }
             sendGameState(session, game);
