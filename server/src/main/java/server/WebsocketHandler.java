@@ -103,8 +103,7 @@ public class WebsocketHandler {
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
                 gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
-                String message = "%s has joined the game as %s".formatted(auth.username(), joiningColor);
-                Notification notif = new Notification(message);
+                Notification notif = new Notification("%s has joined the game as %s".formatted(auth.username(), joiningColor));
                 broadcastMessage(auth.authToken(), notif, game.gameID());
 
             }
@@ -114,8 +113,7 @@ public class WebsocketHandler {
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
                 gameSessions.get(command.getGameID()).put(command.getAuthToken(), session);
-                String message = "%s has joined the game as %s".formatted(auth.username());
-                Notification notif = new Notification(message);
+                Notification notif = new Notification("%s has joined the game as an observer".formatted(auth.username()));
                 broadcastMessage(auth.authToken(), notif, game.gameID());
             }
             sendGameState(session, game);
@@ -156,10 +154,8 @@ public class WebsocketHandler {
                 broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
             } else if (game.game().isInCheck(userColor.opponent())) {
-                String checkMessage = "Check! %s has placed their opponent in check!"
-                        .formatted(auth.username());
-                Notification notification = new Notification(checkMessage);
-                broadcastMessage(auth.authToken(), notification, game.gameID());
+                broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".
+                        formatted(auth.username())), game.gameID());
             } else {
                 broadcastMessage(auth.authToken(), new Notification("Move made by %s".formatted(auth.username())), game.gameID());
             }
