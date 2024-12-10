@@ -11,21 +11,32 @@ import static ui.EscapeSequences.*;
 
 public class GameplayUI {
 
-    private final ChessBoard chessBoard;
+    private static GameplayUI currentInstance;
+    //private final ChessBoard chessBoard;
     private ChessGame chessGame;
     private final Scanner scanner;
     private final ServerFacade server;
     private final int gameID;
     private boolean isWhiteAtBottom;
 
-    public GameplayUI(ServerFacade server, int gameID, boolean isPlayerWhite) {
-        this.chessBoard = new ChessBoard();
-        this.chessBoard.resetBoard();
-        this.chessGame = new ChessGame();
+    private GameplayUI(ServerFacade server, int gameID, boolean isPlayerWhite) {
+        //this.chessBoard = new ChessBoard();
         this.scanner = new Scanner(System.in);
+        //this.chessBoard.resetBoard();
         this.server = server;
         this.gameID = gameID;
         this.isWhiteAtBottom = isPlayerWhite;
+    }
+
+    public static GameplayUI getInstance(ServerFacade server, int gameID, boolean isPlayerWhite) {
+        if (currentInstance == null || currentInstance.gameID != gameID) {
+            currentInstance = new GameplayUI(server, gameID, isPlayerWhite);
+        }
+        return currentInstance;
+    }
+
+    public static GameplayUI getCurrentInstance() {
+        return currentInstance;
     }
 
     public void run() throws IOException {
@@ -143,10 +154,10 @@ public class GameplayUI {
             server.makeMove(gameID, move);
             System.out.println("Move sent to server.");
 
-            ChessGame updatedGame = server.getGame(gameID);
-
-            updateGame(updatedGame);
-            redrawBoard();
+//            ChessGame updatedGame = server.getGame(gameID);
+//
+//            updateGame(updatedGame);
+//            redrawBoard();
 
 
         } catch (IllegalArgumentException e) {
@@ -164,15 +175,21 @@ public class GameplayUI {
 
         try {
             ChessPosition position = ChessPosition.fromAlgebraic(positionInput);
-            ChessPiece piece = chessBoard.getPiece(position);
+            ChessPiece piece = chessGame.getBoard().getPiece(position);
+            Collection<ChessMove> validMoves = chessGame.validMoves(position);
 
             if (piece == null) {
                 System.out.println("No piece at the specified position.");
                 return;
             }
+            if (validMoves.isEmpty()) {
+                System.out.println("No legal moves available for this piece.");
+                return;
+            }
 
-            Collection<ChessMove> validMoves = server.getGame(gameID).validMoves(position);
+            System.out.println("Highlighting legal moves...");
             redrawBoardWithHighlights(validMoves);
+
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid position format. Use algebraic notation (e.g., 'e2').");
         }
@@ -188,7 +205,7 @@ public class GameplayUI {
 
                 int adjustedCol = isWhiteAtBottom ? col : 7 - col;
                 ChessPosition currentPos = new ChessPosition(row + 1, adjustedCol + 1);
-                ChessPiece piece = chessBoard.getPiece(currentPos);
+                ChessPiece piece = chessGame.getBoard().getPiece(currentPos);
 
                 if (isLightSquare) {
                     System.out.print(SET_BG_COLOR_LIGHT_GREY);
@@ -196,8 +213,10 @@ public class GameplayUI {
                     System.out.print(SET_BG_COLOR_DARK_GREY);
                 }
 
-                if (highlights.contains(currentPos)) {
-                    System.out.print(SET_BG_COLOR_GREEN);
+                for (ChessMove startpos : highlights){
+                    if (startpos.getEndPosition().equals(currentPos) || startpos.getStartPosition().equals(currentPos)) {
+                        System.out.print(SET_BG_COLOR_GREEN);
+                    }
                 }
 
                 if (piece != null) {
@@ -225,12 +244,9 @@ public class GameplayUI {
 
 
     public void displayBoard() {
-        System.out.println("Displaying initial board setup...\n");
-
+        System.out.println("Displaying current board setup...\n");
         displayBoardOrientation(true);
-
         System.out.println("\n");
-
         displayBoardOrientation(false);
     }
 
@@ -247,7 +263,7 @@ public class GameplayUI {
 
                 int adjustedCol = whiteAtBottom ? col : 7 - col;
 
-                ChessPiece piece = chessBoard.getPiece(new ChessPosition(row + 1, adjustedCol + 1));
+                ChessPiece piece = chessGame.getBoard().getPiece(new ChessPosition(row + 1, adjustedCol + 1));
 
                 if (isLightSquare) {
                     System.out.print(SET_BG_COLOR_LIGHT_GREY);
@@ -303,7 +319,12 @@ public class GameplayUI {
         System.out.print(pieceSymbol);
     }
     public void updateGame(ChessGame game) {
-        this.chessGame.setBoard(game.getBoard());
+        if (game == null) {
+            System.out.println("Error: Received null game object.");
+            return;
+        }
+        this.chessGame = game;
+        //this.chessGame.setBoard(game.getBoard());
         this.isWhiteAtBottom = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
     }
 

@@ -87,8 +87,11 @@ public class WebsocketCommunicator extends Endpoint {
     private void handleLoadGame(String message) {
         LoadGame loadGame = gson.fromJson(message, LoadGame.class);
         ChessGame game = loadGame.getGame();
-        GameplayUI gameplayUI = new GameplayUI(server, loadGame.getGameID(), game.getTeamTurn() == ChessGame.TeamColor.WHITE);
-        printLoadedGame(game, gameplayUI);
+
+        GameplayUI gameplayUI = GameplayUI.getInstance(server, loadGame.getGameID(), game.getTeamTurn() == ChessGame.TeamColor.WHITE);
+        gameplayUI.updateGame(game);
+        gameplayUI.displayBoard();
+        System.out.print("[IN-GAME] >>> ");
     }
 
     private void printNotification(String message) {

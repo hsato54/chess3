@@ -117,8 +117,7 @@ public class PostloginUI {
         if (success) {
             out.printf("Joined game '%s' as %s.\n", selectedGame.gameName(), color);
             boolean isPlayerWhite = color.equalsIgnoreCase("WHITE");
-            GameplayUI gameplayui= new GameplayUI(server, selectedGame.gameID(), isPlayerWhite);
-            gameplayui.displayBoard();
+            GameplayUI gameplayui = GameplayUI.getInstance(server, selectedGame.gameID(), isPlayerWhite);
             gameplayui.run();
         } else {
             out.println("Failed to join game. Please check the game details and try again.");
@@ -155,8 +154,7 @@ public class PostloginUI {
         server.connect(selectedGame.gameID(), null);
         out.printf("Observing game '%s'.\n", selectedGame.gameName());
 
-        GameplayUI gameplayUI = new GameplayUI(server, selectedGame.gameID(), true);
-        gameplayUI.displayBoard();
+        GameplayUI gameplayUI = GameplayUI.getInstance(server, selectedGame.gameID(), true);
         gameplayUI.runobserve();
     }
 }
