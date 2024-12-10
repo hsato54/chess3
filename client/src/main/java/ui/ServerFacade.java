@@ -107,10 +107,6 @@ public class ServerFacade {
         sendCommand(new Resign(authToken, gameID));
     }
 
-    public void observeGame(int gameID) throws IOException {
-        Connect connectCommand = new Connect(authToken, gameID, null);
-        sendCommand(connectCommand);
-    }
 
 }
 

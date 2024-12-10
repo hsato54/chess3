@@ -99,13 +99,6 @@ public class WebsocketCommunicator extends Endpoint {
         System.out.printf("\n%s\n[IN-GAME] >>> ", message);
     }
 
-    private void printLoadedGame(ChessGame game, GameplayUI gameplayUI) {
-        System.out.print(ERASE_LINE + "\r\n");
-        gameplayUI.updateGame(game);
-        gameplayUI.displayBoard();
-        System.out.print("[IN-GAME] >>> ");
-    }
-
     public void sendMessage(String message) throws IOException {
         if (this.session != null && this.session.isOpen()) {
             this.session.getBasicRemote().sendText(message);

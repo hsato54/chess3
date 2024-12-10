@@ -108,7 +108,7 @@ public class GameplayUI {
     }
     private void redrawBoard() {
         System.out.println("Redrawing the board...");
-        displayBoardOrientation();
+        renderBoard(null);
     }
     private void leaveGame() throws IOException {
         System.out.println("You have left the game. Returning to main menu...");
@@ -191,48 +191,8 @@ public class GameplayUI {
         }
     }
     private void redrawBoardWithHighlights(Collection<ChessMove> highlights) {
-        for (int row = (isWhiteAtBottom ? 7 : 0); (isWhiteAtBottom ? row >= 0 : row < 8); row += (isWhiteAtBottom ? -1 : 1)) {
-            int displayedRowNumber = row + 1;
-            System.out.print(displayedRowNumber + " ");
-
-            boolean isLightSquare = (isWhiteAtBottom ? row % 2 == 1 : row % 2 == 0);
-
-            for (int col = 0; col < 8; col++) {
-
-                int adjustedCol = isWhiteAtBottom ? col : 7 - col;
-                ChessPosition currentPos = new ChessPosition(row + 1, adjustedCol + 1);
-                ChessPiece piece = chessGame.getBoard().getPiece(currentPos);
-
-                if (isLightSquare) {
-                    System.out.print(SET_BG_COLOR_LIGHT_GREY);
-                } else {
-                    System.out.print(SET_BG_COLOR_DARK_GREY);
-                }
-
-                for (ChessMove startpos : highlights){
-                    if (startpos.getEndPosition().equals(currentPos) || startpos.getStartPosition().equals(currentPos)) {
-                        System.out.print(SET_BG_COLOR_GREEN);
-                    }
-                }
-
-                if (piece != null) {
-                    printPiece(piece);
-                } else {
-                    System.out.print("   ");
-                }
-
-                System.out.print(RESET_BG_COLOR);
-                isLightSquare = !isLightSquare;
-            }
-
-            System.out.println(" " + displayedRowNumber);
-        }
-
-        System.out.print("  ");
-        for (char file = (isWhiteAtBottom ? 'a' : 'h'); (isWhiteAtBottom ? file <= 'h' : file >= 'a'); file += (isWhiteAtBottom ? 1 : -1)) {
-            System.out.print(" " + file + " ");
-        }
-        System.out.println();
+        System.out.println("Redrawing the board with highlights...");
+        renderBoard(highlights);
     }
 
 
@@ -246,43 +206,7 @@ public class GameplayUI {
 
     private void displayBoardOrientation() {
         System.out.println(isWhiteAtBottom ? "White pieces at the bottom:" : "Black pieces at the bottom:");
-
-        for (int row = (isWhiteAtBottom ? 7 : 0); (isWhiteAtBottom ? row >= 0 : row < 8); row += (isWhiteAtBottom ? -1 : 1)) {
-            int displayedRowNumber = row + 1;
-            System.out.print(displayedRowNumber + " ");
-
-            boolean isLightSquare = (isWhiteAtBottom ? row % 2 == 1 : row % 2 == 0);
-
-            for (int col = 0; col < 8; col++) {
-
-                int adjustedCol = isWhiteAtBottom ? col : 7 - col;
-
-                ChessPiece piece = chessGame.getBoard().getPiece(new ChessPosition(row + 1, adjustedCol + 1));
-
-                if (isLightSquare) {
-                    System.out.print(SET_BG_COLOR_LIGHT_GREY);
-                } else {
-                    System.out.print(SET_BG_COLOR_DARK_GREY);
-                }
-
-                if (piece != null) {
-                    printPiece(piece);
-                } else {
-                    System.out.print("   ");
-                }
-
-                System.out.print(RESET_BG_COLOR);
-                isLightSquare = !isLightSquare;
-            }
-
-            System.out.println(" " + displayedRowNumber);
-        }
-
-        System.out.print("  ");
-        for (char file = (isWhiteAtBottom ? 'a' : 'h'); (isWhiteAtBottom ? file <= 'h' : file >= 'a'); file += (isWhiteAtBottom ? 1 : -1)) {
-            System.out.print(" " + file + " ");
-        }
-        System.out.println();
+        redrawBoard();
     }
 
     private void printPiece(ChessPiece piece) {
@@ -320,4 +244,46 @@ public class GameplayUI {
         this.chessGame = game;
     }
 
+    private void renderBoard(Collection<ChessMove> highlights) {
+        for (int row = (isWhiteAtBottom ? 7 : 0); (isWhiteAtBottom ? row >= 0 : row < 8); row += (isWhiteAtBottom ? -1 : 1)) {
+            int displayedRowNumber = row + 1;
+            System.out.print(displayedRowNumber + " ");
+
+            boolean isLightSquare = (isWhiteAtBottom ? row % 2 == 1 : row % 2 == 0);
+
+            for (int col = 0; col < 8; col++) {
+                int adjustedCol = isWhiteAtBottom ? col : 7 - col;
+                ChessPosition currentPos = new ChessPosition(row + 1, adjustedCol + 1);
+                ChessPiece piece = chessGame.getBoard().getPiece(currentPos);
+
+                // Set square background color
+                System.out.print(isLightSquare ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_DARK_GREY);
+
+                // Highlight legal moves if provided
+                if (highlights != null && highlights.stream().anyMatch(move ->
+                        move.getEndPosition().equals(currentPos) || move.getStartPosition().equals(currentPos))) {
+                    System.out.print(SET_BG_COLOR_GREEN);
+                }
+
+                // Print piece or empty space
+                if (piece != null) {
+                    printPiece(piece);
+                } else {
+                    System.out.print("   ");
+                }
+
+                System.out.print(RESET_BG_COLOR);
+                isLightSquare = !isLightSquare;
+            }
+
+            System.out.println(" " + displayedRowNumber);
+        }
+
+        // Print file labels (a-h)
+        System.out.print("  ");
+        for (char file = (isWhiteAtBottom ? 'a' : 'h'); (isWhiteAtBottom ? file <= 'h' : file >= 'a'); file += (isWhiteAtBottom ? 1 : -1)) {
+            System.out.print(" " + file + " ");
+        }
+        System.out.println();
+    }
 }
