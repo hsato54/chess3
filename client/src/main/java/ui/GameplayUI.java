@@ -4,7 +4,6 @@ import chess.*;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -12,7 +11,6 @@ import static ui.EscapeSequences.*;
 public class GameplayUI {
 
     private static GameplayUI currentInstance;
-    //private final ChessBoard chessBoard;
     private ChessGame chessGame;
     private final Scanner scanner;
     private final ServerFacade server;
@@ -20,12 +18,11 @@ public class GameplayUI {
     private boolean isWhiteAtBottom;
 
     private GameplayUI(ServerFacade server, int gameID, boolean isPlayerWhite) {
-        //this.chessBoard = new ChessBoard();
         this.scanner = new Scanner(System.in);
-        //this.chessBoard.resetBoard();
         this.server = server;
         this.gameID = gameID;
         this.isWhiteAtBottom = isPlayerWhite;
+        this.chessGame = null;
     }
 
     public static GameplayUI getInstance(ServerFacade server, int gameID, boolean isPlayerWhite) {
@@ -42,6 +39,10 @@ public class GameplayUI {
     public void run() throws IOException {
 
         System.out.println("Game started! Type 'help' to see available commands.");
+
+        if (chessGame != null) {
+            redrawBoard(); // Ensure the correct orientation is displayed
+        }
 
         while (true) {
             System.out.print("[IN-GAME] >>> ");
@@ -107,7 +108,7 @@ public class GameplayUI {
     }
     private void redrawBoard() {
         System.out.println("Redrawing the board...");
-        displayBoardOrientation(isWhiteAtBottom);
+        displayBoardOrientation();
     }
     private void leaveGame() throws IOException {
         System.out.println("You have left the game. Returning to main menu...");
@@ -153,11 +154,6 @@ public class GameplayUI {
 
             server.makeMove(gameID, move);
             System.out.println("Move sent to server.");
-
-//            ChessGame updatedGame = server.getGame(gameID);
-//
-//            updateGame(updatedGame);
-//            redrawBoard();
 
 
         } catch (IllegalArgumentException e) {
@@ -245,23 +241,21 @@ public class GameplayUI {
 
     public void displayBoard() {
         System.out.println("Displaying current board setup...\n");
-        displayBoardOrientation(true);
-        System.out.println("\n");
-        displayBoardOrientation(false);
+        displayBoardOrientation();
     }
 
-    private void displayBoardOrientation(boolean whiteAtBottom) {
-        System.out.println(whiteAtBottom ? "White pieces at the bottom:" : "Black pieces at the bottom:");
+    private void displayBoardOrientation() {
+        System.out.println(isWhiteAtBottom ? "White pieces at the bottom:" : "Black pieces at the bottom:");
 
-        for (int row = (whiteAtBottom ? 7 : 0); (whiteAtBottom ? row >= 0 : row < 8); row += (whiteAtBottom ? -1 : 1)) {
+        for (int row = (isWhiteAtBottom ? 7 : 0); (isWhiteAtBottom ? row >= 0 : row < 8); row += (isWhiteAtBottom ? -1 : 1)) {
             int displayedRowNumber = row + 1;
             System.out.print(displayedRowNumber + " ");
 
-            boolean isLightSquare = (whiteAtBottom ? row % 2 == 1 : row % 2 == 0);
+            boolean isLightSquare = (isWhiteAtBottom ? row % 2 == 1 : row % 2 == 0);
 
             for (int col = 0; col < 8; col++) {
 
-                int adjustedCol = whiteAtBottom ? col : 7 - col;
+                int adjustedCol = isWhiteAtBottom ? col : 7 - col;
 
                 ChessPiece piece = chessGame.getBoard().getPiece(new ChessPosition(row + 1, adjustedCol + 1));
 
@@ -285,7 +279,7 @@ public class GameplayUI {
         }
 
         System.out.print("  ");
-        for (char file = (whiteAtBottom ? 'a' : 'h'); (whiteAtBottom ? file <= 'h' : file >= 'a'); file += (whiteAtBottom ? 1 : -1)) {
+        for (char file = (isWhiteAtBottom ? 'a' : 'h'); (isWhiteAtBottom ? file <= 'h' : file >= 'a'); file += (isWhiteAtBottom ? 1 : -1)) {
             System.out.print(" " + file + " ");
         }
         System.out.println();
@@ -324,20 +318,6 @@ public class GameplayUI {
             return;
         }
         this.chessGame = game;
-        //this.chessGame.setBoard(game.getBoard());
-        this.isWhiteAtBottom = game.getTeamTurn() == ChessGame.TeamColor.WHITE;
     }
 
-    private void observeGame() {
-        System.out.print("Enter the game ID to observe: ");
-        try {
-            int gameIDToObserve = Integer.parseInt(scanner.nextLine().trim());
-            server.observeGame(gameIDToObserve); // Assuming server facade supports observing
-            System.out.printf("Observing game ID: %d. You will now receive updates.\n", gameIDToObserve);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid game ID. Please enter a valid number.");
-        } catch (IOException io){
-            System.out.println("ioexception");
-        }
-    }
 }
