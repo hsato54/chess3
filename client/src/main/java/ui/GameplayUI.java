@@ -195,10 +195,6 @@ public class GameplayUI {
         renderBoard(highlights);
     }
 
-
-
-
-
     public void displayBoard() {
         System.out.println("Displaying current board setup...\n");
         displayBoardOrientation();
