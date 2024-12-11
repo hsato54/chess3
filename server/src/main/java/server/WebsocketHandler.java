@@ -148,17 +148,26 @@ public class WebsocketHandler {
             }
 
             game.game().makeMove(command.getMove());
-            Server.gameService.updateGame(auth.authToken(), game);
 
             if (game.game().isInCheckmate(userColor.opponent())) {
                 broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
-            } else if (game.game().isInCheck(userColor.opponent())) {
+            }
+            else if (game.game().isInCheck(userColor.opponent())) {
                 broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".
                         formatted(auth.username())), game.gameID());
-            } else {
+            }
+            else if (game.game().isInStalemate(userColor.opponent())) {
+                broadcastMessage(auth.authToken(),
+                        new Notification("Stalemate! The game ends in a draw."),
+                        game.gameID());
+                game.game().setGameOver(true);
+            }
+            else {
                 broadcastMessage(auth.authToken(), new Notification(auth.username() + " has made a move."), game.gameID());
             }
+
+            Server.gameService.updateGame(auth.authToken(), game);
 
             sendGameStateToAll(game);
         } catch (InvalidMoveException e) {

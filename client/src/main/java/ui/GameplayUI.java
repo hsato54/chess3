@@ -283,3 +283,8 @@ public class GameplayUI {
         System.out.println();
     }
 }
+
+//when move is made, make sure the move is specfied ex e2 e4
+//checkmate, check, stalematenotif should be sent to both sides
+//make sure resign no doesnt kick me out
+//make sure resign yes doesnt kick me out either, just game is over
