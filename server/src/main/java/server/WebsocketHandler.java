@@ -1,6 +1,7 @@
 package server;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
@@ -150,21 +151,24 @@ public class WebsocketHandler {
             game.game().makeMove(command.getMove());
 
             if (game.game().isInCheckmate(userColor.opponent())) {
-                broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
+                broadcastMessageAll(new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
             }
             else if (game.game().isInCheck(userColor.opponent())) {
-                broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".
+                broadcastMessageAll(new Notification("Check! %s has placed their opponent in check!".
                         formatted(auth.username())), game.gameID());
             }
             else if (game.game().isInStalemate(userColor.opponent())) {
-                broadcastMessage(auth.authToken(),
-                        new Notification("Stalemate! The game ends in a draw."),
+                broadcastMessageAll(new Notification("Stalemate! The game ends in a draw."),
                         game.gameID());
                 game.game().setGameOver(true);
             }
             else {
-                broadcastMessage(auth.authToken(), new Notification(auth.username() + " has made a move."), game.gameID());
+                ChessPosition start = command.getMove().getStartPosition();
+                ChessPosition end = command.getMove().getEndPosition();
+                String moveDescription = String.format("%s has made the move %s to %s.",
+                        auth.username(), start.toAlgebraic(), end.toAlgebraic());
+                broadcastMessage(auth.authToken(), new Notification(moveDescription), game.gameID());
             }
 
             Server.gameService.updateGame(auth.authToken(), game);
@@ -273,6 +277,16 @@ public class WebsocketHandler {
         for (String authToken : gameSessions.get(gameID).keySet()) {
             if (!authToken.equals(sender)) {
                 sendMessage(gameSessions.get(gameID).get(authToken), message);
+            }
+        }
+    }
+    private void broadcastMessageAll(ServerMessage message, int gameID) throws IOException {
+        Map<String, Session> gameSessionMap = gameSessions.get(gameID);
+        if (gameSessionMap != null) {
+            for (Session session : gameSessionMap.values()) {
+                if (session != null && session.isOpen()) {
+                    sendMessage(session, message);
+                }
             }
         }
     }

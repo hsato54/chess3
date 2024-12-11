@@ -29,6 +29,11 @@ public class ChessPosition {
 
         return new ChessPosition(row, col);
     }
+    public String toAlgebraic() {
+        char file = (char) ('a' + col - 1);
+        int rank = row;
+        return "" + file + rank;
+    }
 
     @Override
     public boolean equals(Object o) {

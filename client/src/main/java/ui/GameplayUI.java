@@ -57,7 +57,6 @@ public class GameplayUI {
                 return;
             } else if (command.equals("resign")) {
                 resignGame();
-                return;
             } else if (command.equals("highlight")) {
                 highlightLegalMoves();
             } else if (command.equals("move")) {
@@ -115,13 +114,20 @@ public class GameplayUI {
         server.leave(gameID);
     }
     private void resignGame() throws IOException {
-        System.out.print("Are you sure you want to resign? (yes/no): ");
-        String confirmation = scanner.nextLine().trim().toLowerCase();
-        if (confirmation.equals("yes")) {
-            System.out.println("You have resigned from the game.");
-            server.resign(gameID);
-        } else {
-            System.out.println("Resignation cancelled.");
+        while (true) {
+            System.out.print("Are you sure you want to resign? (yes/no): ");
+            String confirmation = scanner.nextLine().trim().toLowerCase();
+            if (confirmation.equals("yes")) {
+                System.out.println("You have resigned from the game.");
+                server.resign(gameID);
+                System.out.println("The game is over, type leave to leave the game.");
+                break;
+            } else if (confirmation.equals("no")) {
+                System.out.println("Resignation cancelled.");
+                break;
+            } else {
+                System.out.println("Invalid response. Type 'yes' to resign or 'no' to continue.");
+            }
         }
     }
     private void makeMove() {
@@ -283,8 +289,3 @@ public class GameplayUI {
         System.out.println();
     }
 }
-
-//when move is made, make sure the move is specfied ex e2 e4
-//checkmate, check, stalematenotif should be sent to both sides
-//make sure resign no doesnt kick me out
-//make sure resign yes doesnt kick me out either, just game is over
