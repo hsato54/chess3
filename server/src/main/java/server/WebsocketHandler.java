@@ -109,7 +109,6 @@ public class WebsocketHandler {
 
             }
             else {
-                // Handle observer join logic
                 if (gameSessions.get(command.getGameID()) == null){
                     gameSessions.put(command.getGameID(), new ConcurrentHashMap<>());
                 }
@@ -151,15 +150,15 @@ public class WebsocketHandler {
             game.game().makeMove(command.getMove());
 
             if (game.game().isInCheckmate(userColor.opponent())) {
-                broadcastMessageAll(new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
+                broadcastMessage(auth.authToken(), new Notification("Checkmate! %s wins!".formatted(auth.username())), game.gameID());
                 game.game().setGameOver(true);
             }
             else if (game.game().isInCheck(userColor.opponent())) {
-                broadcastMessageAll(new Notification("Check! %s has placed their opponent in check!".
+                broadcastMessage(auth.authToken(), new Notification("Check! %s has placed their opponent in check!".
                         formatted(auth.username())), game.gameID());
             }
             else if (game.game().isInStalemate(userColor.opponent())) {
-                broadcastMessageAll(new Notification("Stalemate! The game ends in a draw."),
+                broadcastMessage(auth.authToken(), new Notification("Stalemate! The game ends in a draw."),
                         game.gameID());
                 game.game().setGameOver(true);
             }
